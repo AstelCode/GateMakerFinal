@@ -6,6 +6,7 @@ export class RectangleCollider extends Collider {
   private _height: number;
 
   constructor();
+  constructor(width: number, height: number);
   constructor(width: number = 0, height: number = 0) {
     super();
     this._width = width;

@@ -6,8 +6,7 @@ import { CanvasHandler } from "./handlers/CanvasHandler";
 import { EventsHandler } from "./events/EventsHandler";
 import { EntityTree } from "./EntityTree";
 import { AssetManager } from "./assetManager/AssetManager";
-
-let i, j;
+import { FontLoader } from "./loaders/FontLoader";
 
 export interface EngineContext<T extends Record<string, any>> {
   mouse: MouseController;
@@ -30,6 +29,7 @@ export class Engine<
   protected context: Context;
   protected tree: EntityTree;
   protected assets: AssetManager;
+  protected fontsLoader: FontLoader;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = new CanvasHandler(canvas, { autoResize: true });
@@ -38,6 +38,7 @@ export class Engine<
     this.events = new EventsHandler();
     this.assets = new AssetManager();
     this.tree = new EntityTree();
+    this.fontsLoader = new FontLoader();
     this.context = this.createContext();
   }
 
@@ -58,10 +59,14 @@ export class Engine<
   public async start() {
     this.init();
     this.registerAssets();
+    await this.fontsLoader.load();
     await this.assets.load();
+    await this.loadAssets();
     this.ready();
     this.startLoop();
   }
+
+  protected async loadAssets() {}
 
   protected init() {}
   protected registerAssets() {}
@@ -69,6 +74,7 @@ export class Engine<
 
   public destroy() {
     this.stopLoop();
+    document.removeEventListener("visibilitychange", this.onVisibilityChange);
     this.mouse.destroy();
     this.keyboard.destroy();
     this.events.destroy();
@@ -78,35 +84,42 @@ export class Engine<
 
   //* principal loop
   private running: boolean = false;
-  private visible: boolean = true;
+  private counter: number = 0;
+  private fps: number = 0;
+  private lastTime = Date.now();
   private loop = (time: number) => {
     this.canvas.clearScreen();
-    for (i = 0; i < this.tree.entities.length; i++) {
-      this.tree.entities[i].update(time);
-    }
-
-    const layers = this.tree.layers;
-    for (i = 0; i < layers.length; i++) {
-      for (j = 0; j < layers[i].length; j++) {
-        layers[i][j].draw(this.canvas);
-      }
-    }
-
-    if (this.running && this.visible)
+    this.tree.update(time);
+    this.tree.draw();
+    this.updateFPS();
+    if (this.running) {
       this.requestAnimationFrameId = window.requestAnimationFrame(this.loop);
+    }
   };
 
-  onVisibilityChange = () => {
+  private updateFPS() {
+    const currentTime = Date.now();
+    if (currentTime - this.lastTime > 1000) {
+      this.fps = this.counter;
+      this.counter = 0;
+      this.lastTime = currentTime;
+    }
+    this.canvas.drawFPS(this.fps);
+    this.counter++;
+  }
+
+  private onVisibilityChange = () => {
     if (document.hidden) {
-      this.visible = false;
-      console.info("supence loop");
+      this.stopLoop();
     } else {
-      if (!this.visible) this.startLoop();
-      this.visible = true;
+      if (!this.running) {
+        this.startLoop();
+      }
     }
   };
 
   protected startLoop() {
+    if (this.running) return;
     console.info("Staring loop");
     this.running = true;
     this.requestAnimationFrameId = window.requestAnimationFrame(this.loop);
@@ -114,7 +127,6 @@ export class Engine<
 
   protected stopLoop() {
     console.info("Staring loop");
-
     this.running = false;
     window.cancelAnimationFrame(this.requestAnimationFrameId);
   }

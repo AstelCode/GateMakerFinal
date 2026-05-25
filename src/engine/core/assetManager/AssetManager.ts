@@ -1,47 +1,54 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { CanvasHandler } from "../handlers";
+/* import { CanvasHandler } from "../handlers"; */
+import { CanvasRing } from "./CanvasRing";
 
-type AssetLoaderArg = { ctx: CanvasRenderingContext2D };
-type AssetLoader = (arg: AssetLoaderArg) => Promise<any>;
+type AssetLoaderArg = {
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+};
+type AssetLoader<T> = T extends true
+  ? (arg: AssetLoaderArg) => Promise<any>
+  : () => Promise<any>;
 type AssetOptions = { image?: boolean; width?: number; height?: number };
 type AssetInfo = {
   name: string;
-  loader: AssetLoader;
+  loader: AssetLoader<true>;
   options: AssetOptions;
   callbacks: ((data: any) => void)[];
 };
 type AssetGetCallback = { name: string; callback: (data: any) => void };
 
 export class AssetManager {
-  private static canvas: CanvasHandler;
-  private static initCanvas() {
+  /*  private static initCanvas() {
     if (this.canvas) return;
     this.canvas = new CanvasHandler();
-  }
+  } */
 
   private loadedAssets: Map<string, any> = new Map();
-  private assetsInfo: Array<AssetInfo> = [];
+  private queue: AssetInfo[] = [];
+  private assetsInfo: Map<string, AssetInfo> = new Map();
   private callbacks: Record<string, AssetGetCallback[]> = {};
 
   constructor() {
-    AssetManager.initCanvas();
+    CanvasRing.initCanvasRing();
+    /*  AssetManager.initCanvas(); */
   }
 
-  public addAsset(
+  public addAsset<T>(
     name: string,
-    loader: AssetLoader,
+    loader: AssetLoader<T>,
     options: AssetOptions = {},
     callback?: (data: any) => void,
   ) {
-    if (this.loadedAssets.has(name)) return;
+    if (this.assetsInfo.has(name)) return;
     const assetInfo: AssetInfo = {
       name,
       loader,
       options,
       callbacks: callback ? [callback] : [],
     };
-    this.assetsInfo.push(assetInfo);
+    this.assetsInfo.set(name, assetInfo);
+    this.queue.push(assetInfo);
   }
 
   public getAsset(name: string) {
@@ -61,21 +68,25 @@ export class AssetManager {
 
   public async load() {
     const loaders: Promise<void>[] = [];
-    for (const asset of this.assetsInfo) {
-      if (this.loadedAssets.has(asset.name)) continue;
+    for (let i = 0; i < this.queue.length; i++) {
       const loader = async () => {
-        if (asset.options.image) {
-          AssetManager.canvas.clearScreen();
-          AssetManager.canvas.width = asset.options.width || 0;
-          AssetManager.canvas.height = asset.options.height || 0;
-        }
+        const asset = this.queue.pop();
+        if (!asset) return;
+        if (this.loadedAssets.has(asset.name)) return;
 
-        let result = await asset.loader({
-          ctx: AssetManager.canvas.ctx,
-        });
-
+        const { canvas, ctx } = CanvasRing.getCanvas();
+        let result;
         if (asset.options.image) {
-          result = await AssetManager.canvas.toImage();
+          canvas.width = asset.options.width || 0;
+          canvas.height = asset.options.height || 0;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          result = await asset.loader({
+            ctx,
+          });
+          result = await CanvasRing.toImage(canvas);
+        } else {
+          debugger;
+          result = await (asset.loader as AssetLoader<false>)();
         }
 
         // Ejecutar callbacks registrados en addAsset
@@ -97,6 +108,6 @@ export class AssetManager {
 
   public destroy() {
     this.loadedAssets.clear();
-    this.assetsInfo.length = 0;
+    this.assetsInfo.clear();
   }
 }

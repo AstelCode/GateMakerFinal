@@ -14,6 +14,9 @@ export abstract class Collider {
     this.position = position;
   }
 
+  public getAABB() {
+    return this.aabb;
+  }
   public updateAABB() {}
 
   public pointInside(v: V2): boolean {

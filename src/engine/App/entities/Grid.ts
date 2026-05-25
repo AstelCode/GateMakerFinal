@@ -1,5 +1,10 @@
-import { CanvasHandler, Entity, M3, V2 } from "@/engine/core";
+import { Entity, M3, V2 } from "@/engine/core";
 import {
+  BACKGROUND,
+  CELL_SIZE,
+  GRID_DOT_COLOR,
+  GRID_DOT_RADIUS,
+  GRID_DOT_SIZE,
   MAX_ZOOM,
   MIN_ZOOM,
   smoothZoom,
@@ -17,13 +22,26 @@ export class Grid extends Entity {
   private t: number = START_T;
 
   async loadAssets(): Promise<void> {
-    this.context.assets.addAsset(
+    this.context.assets.addAsset<true>(
       "GRID_PATTERN",
       async ({ ctx }) => {
-        ctx.fillStyle = "red";
-        ctx.fillRect(10, 10, 40, 40);
+        ctx.fillStyle = BACKGROUND;
+        ctx.fillRect(0, 0, CELL_SIZE, CELL_SIZE);
+        const size = GRID_DOT_SIZE;
+        const radius = GRID_DOT_RADIUS;
+        ctx.fillStyle = GRID_DOT_COLOR;
+
+        ctx.beginPath();
+        ctx.roundRect(
+          CELL_SIZE / 2 - size / 2,
+          CELL_SIZE / 2 - size / 2,
+          size,
+          size,
+          radius,
+        );
+        ctx.fill();
       },
-      { image: true, width: 50, height: 50 },
+      { image: true, width: CELL_SIZE, height: CELL_SIZE },
     );
     await this.context.assets.load();
     this.context.assets.getAssetSync("GRID_PATTERN", (data) => {
@@ -47,6 +65,8 @@ export class Grid extends Entity {
       this.scale,
       this.scale,
     );
+
+    this.context.tree.registerEntity("GRID", this);
   }
 
   on_drag({ dx, dy }: { dx: number; dy: number }) {
@@ -85,22 +105,38 @@ export class Grid extends Entity {
     );
   }
 
-  draw(canvas: CanvasHandler): void {
+  on_toGridPos({ x, y }: { x: number; y: number }) {
+    let _x = x / this.scale - this.position.x;
+    let _y = y / this.scale - this.position.y;
+    _x = Math.floor(_x / CELL_SIZE);
+    _y = Math.floor(_y / CELL_SIZE);
+    return { x: _x, y: _y };
+  }
+
+  draw(): void {
+    const canvas = this.context.canvas;
     const ctx = canvas.ctx;
     if (this.image && !this.pattern) {
       this.pattern = ctx.createPattern(this.image, "repeat")!;
     }
-    if (this.pattern) {
-      this.pattern.setTransform(this.transform.toDOMMatriz());
-      ctx.rect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = this.pattern;
-      ctx.fill();
+    if (!this.pattern) return;
 
-      ctx.save();
-      ctx.setTransform(this.transform.toDOMMatriz());
-      ctx.fillStyle = "yellow";
-      ctx.fillRect(-10, -10, 20, 20);
-      ctx.restore();
-    }
+    this.pattern.setTransform(this.transform.toDOMMatriz());
+
+    ctx.fillStyle = this.pattern;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.setTransform(this.transform.toDOMMatriz());
+    ctx.beginPath();
+    ctx.fillStyle = "yellow";
+    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  afterDrawChilds(): void {
+    const canvas = this.context.canvas;
+    const ctx = canvas.ctx;
+    ctx.restore();
   }
 }

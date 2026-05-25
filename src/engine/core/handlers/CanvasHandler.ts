@@ -12,8 +12,9 @@ export class CanvasHandler {
 
     this._canvas = canvas;
     this._ctx = this._canvas.getContext("2d")!;
-    if (options?.autoResize)
-      this._canvas.addEventListener("resize", this.onResize);
+
+    if (options?.autoResize) window.addEventListener("resize", this.onResize);
+    /*     CanvasHandler.initCanvasRing(canvas); */
   }
 
   get width() {
@@ -30,10 +31,12 @@ export class CanvasHandler {
 
   set width(value: number) {
     this._canvas.width = value;
+    this.ctx.canvas.width = value;
   }
 
   set height(value: number) {
     this._canvas.height = value;
+    this.ctx.canvas.height = value;
   }
 
   get ctx() {
@@ -41,23 +44,55 @@ export class CanvasHandler {
   }
 
   public async toImage() {
+    debugger;
+
+    /* const currentCanvasCopy = CanvasHandler.getCanvasCopy(this._canvas);
+    if (currentCanvasCopy instanceof OffscreenCanvas) {
+      return await new Promise<HTMLImageElement>((res, rej) => {
+        currentCanvasCopy
+          .convertToBlob()
+          .then((blob) => {
+            if (!blob) {
+              rej();
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.src = url;
+            res(img);
+          })
+          .catch(rej);
+      });
+    } else { */
     return await new Promise<HTMLImageElement>((res, rej) => {
-      this._canvas.toBlob((blob) => {
+      this.canvas.toBlob((blob) => {
         if (!blob) {
           rej();
           return;
         }
         const url = URL.createObjectURL(blob);
-
         const img = new Image();
         img.src = url;
         res(img);
       });
     });
+    /*   } */
   }
 
   public clearScreen() {
     this.ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  public drawFPS(fps: number) {
+    this.ctx.save();
+    this.ctx.fillStyle = "white";
+    this.ctx.fillRect(0, 0, 80, 20);
+    this.ctx.fillStyle = "black";
+    this.ctx.textAlign = "start";
+    this.ctx.textBaseline = "top";
+    this.ctx.font = "20px serif";
+    this.ctx.fillText(`FPS : ${fps}`, 0, 0);
+    this.ctx.restore();
   }
 
   private onResize = () => {

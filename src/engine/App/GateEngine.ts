@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { Engine, EngineContext, Entity, V2 } from "../core";
-import { $Rect } from "./entities/$Rect";
+import { Engine, EngineContext, Entity } from "../core";
+import { CELL_SIZE, FONTS } from "./constants";
 import { Grid } from "./entities/Grid";
+import { NodeBase } from "./entities/NodeBase";
 
 interface GateEngineEvents {}
 
@@ -12,18 +13,35 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     super(canvas);
   }
 
-  private grid: Entity = new Grid();
+  protected registerAssets(): void {
+    this.fontsLoader.registerFonts(FONTS);
+  }
+
   protected ready(): void {
-    this.tree.addEntity(this.grid);
+    const grid = new Grid();
+    this.tree.addEntity(grid);
+    this.tree.setChild(grid, new NodeBase(10, 3));
+    const node = new NodeBase(10, 3);
+    node.position.y += 400;
+    this.tree.setChild(grid, node);
+    //this.tree.addEntity(new NodeBase(100, 100));
     this.initEvents();
   }
 
   protected initEvents() {
     this.mouse.on("drag", (e) => {
-      this.grid.emit("drag", e);
+      const grid = this.tree.getEntity("GRID")!;
+      grid.emit("drag", e);
     });
     this.mouse.on("wheel", (e) => {
-      this.grid.emit("wheel", e);
+      const grid = this.tree.getEntity("GRID")!;
+      grid.emit("wheel", e);
+    });
+
+    this.mouse.on("down", (e) => {
+      const grid = this.tree.getEntity("GRID");
+      const v = grid?.emit("toGridPos", e);
+      console.log(v);
     });
     /*     this.mouseController.on("down", ({ x, y }) => {
       if (this.rect) return;
