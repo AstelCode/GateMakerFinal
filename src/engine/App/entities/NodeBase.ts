@@ -2,9 +2,22 @@ import { Entity, RectangleCollider, V2 } from "@/engine/core";
 import {
   CELL_SIZE,
   CONECTOR_COLOR,
+  CONECTOR_OFFSET,
   GRID_DOT_RADIUS,
   GRID_DOT_SIZE,
 } from "../constants";
+
+enum Direction {
+  TOP = 0,
+  LEFT = 1,
+  BOTTOM = 2,
+  RIGHT = 3,
+}
+interface Connector {
+  name: string;
+  direction: Direction;
+  idx: number;
+}
 
 export class NodeBase extends Entity {
   public collider: RectangleCollider;
@@ -12,25 +25,29 @@ export class NodeBase extends Entity {
   private _width: number;
   private _height: number;
   protected pivot: V2 = new V2();
+  private contectors: Connector[];
 
   constructor(gridXSpan: number, gridYSpan: number) {
     super();
-    this._width = gridXSpan * CELL_SIZE + GRID_DOT_SIZE;
-    this._height = gridYSpan * CELL_SIZE + GRID_DOT_SIZE;
+    this._width = gridXSpan * CELL_SIZE + CONECTOR_OFFSET * 2;
+    this._height = gridYSpan * CELL_SIZE + CONECTOR_OFFSET * 2;
     this.collider = new RectangleCollider(this._width, this._height);
     this.collider.setPosition(this.position);
     this.layer = 1;
+    this.contectors = [];
 
     if (gridXSpan % 2 == 0) this.pivot.x += CELL_SIZE / 2;
     if (gridYSpan % 2 == 0) this.pivot.y += CELL_SIZE / 2;
+
+    this.contectors.push({ name: "A", direction: Direction.TOP, idx: 3 });
   }
 
   async loadAssets(): Promise<void> {
     const w = this.width;
     const h = this.height;
-    const s = GRID_DOT_SIZE;
-    const cW = this.width - s;
-    const cH = this.height - s;
+    const s = CONECTOR_OFFSET;
+    const cW = this.width - s * 2;
+    const cH = this.height - s * 2;
     this.context.assets.addAsset<true>(
       "NODE_BACKGROUND",
       async ({ ctx }) => {
@@ -38,13 +55,13 @@ export class NodeBase extends Entity {
         const r = 8;
         ctx.beginPath();
         ctx.fillStyle = "#4f545e";
-        ctx.roundRect(s / 2, s / 2, cW, cH, r);
+        ctx.roundRect(s, s, cW, cH, r);
         ctx.fill();
         ctx.beginPath();
         ctx.fillStyle = "#1e1f23";
         ctx.roundRect(
-          margin + s / 2,
-          margin + s / 2,
+          margin + s,
+          margin + s,
           cW - margin * 2,
           cH - margin * 2,
           r,
@@ -57,12 +74,6 @@ export class NodeBase extends Entity {
         ctx.fillStyle = "white";
         ctx.font = "25px Orbitron";
         ctx.fillText("NODE", w / 2, h / 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        const radius = GRID_DOT_RADIUS;
-        ctx.fillStyle = CONECTOR_COLOR;
-        ctx.roundRect(CELL_SIZE * 6 - 10, 0, s + 10, s + 5, radius);
         ctx.fill();
       },
       {
@@ -100,12 +111,41 @@ export class NodeBase extends Entity {
     const ctx = canvas.ctx;
     if (!this.texture) return;
 
+    const s = CONECTOR_OFFSET;
+    const cs = CELL_SIZE;
+    const cx = this.position.x + this.pivot.x;
+    const cy = this.position.y + this.pivot.y;
+    const startX = cx - this.width / 2;
+    const startY = cy - this.height / 2;
+
     ctx.drawImage(
       this.texture,
-      this.position.x + this.pivot.x - this.width / 2,
-      this.position.y + this.pivot.y - this.height / 2,
+      cx - this.width / 2,
+      cy - this.height / 2,
       this.width,
       this.height,
     );
+
+    for (const con of this.contectors) {
+      ctx.beginPath();
+      const radius = GRID_DOT_RADIUS;
+      ctx.fillStyle = CONECTOR_COLOR;
+
+      const of = cs * con.idx;
+
+      const sty =
+        con.direction == Direction.BOTTOM ? startY + this.height - s : startY;
+
+      const stx =
+        con.direction == Direction.RIGHT ? startX + this.width - s : startX;
+
+      if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
+        ctx.roundRect(stx + of, sty, s * 2, s * 2, radius);
+      } else {
+        ctx.roundRect(stx, sty + of, s * 2, s * 2, radius);
+      }
+
+      ctx.fill();
+    }
   }
 }
