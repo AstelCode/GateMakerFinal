@@ -92,7 +92,7 @@ export class EntityTree {
         let entity = layers[i][j];
         if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
           entity = entity.pointCollition(v) ?? entity;
-          return { entity, v };
+          return { entity, v: v };
         }
       }
     }

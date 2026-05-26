@@ -80,11 +80,11 @@ export class Entity {
   }
 
   pointCollition(v: V2): undefined | Entity {
-    const v1 = this.transform.mulVInv(v);
+    this.transform.mulVInv(v);
     for (let i = this.children.length - 1; i >= 0; i--) {
       let entity = this.children[i];
-      if (entity.aabb.pointInside(v1) || entity.collider?.pointInside(v1)) {
-        entity = entity.pointCollition(v1) ?? entity;
+      if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
+        entity = entity.pointCollition(v) ?? entity;
         return entity;
       }
     }

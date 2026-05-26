@@ -3,7 +3,7 @@ import { CONECTOR_COLOR, CONECTOR_SIZE, GRID_DOT_RADIUS } from "../constants";
 
 export class Connector extends Entity {
   public collider: RectangleCollider;
-  constructor(public type: string, position: V2) {
+  constructor(public name: string, position: V2) {
     super();
     this.collider = new RectangleCollider();
     this.collider.setPosition(this.transform.position);

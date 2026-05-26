@@ -1,5 +1,5 @@
 import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
-import { CELL_SIZE, CONECTOR_SIZE } from "../constants";
+import { CELL_SIZE } from "../constants";
 import { Connector } from "./Connector";
 
 enum Direction {
@@ -21,7 +21,7 @@ export class NodeBase extends Entity {
   private _width: number;
   private _height: number;
   protected pivot: V2 = new V2();
-  private contectors: IConnector[]; // ? move to static
+  private contectors: IConnector[];
 
   constructor(gridXSpan: number, gridYSpan: number) {
     super();
@@ -39,7 +39,7 @@ export class NodeBase extends Entity {
     if (gridYSpan % 2 == 0) this.transform.position.y += CELL_SIZE / 2;
     this.transform.updateMatriz();
 
-    this.contectors.push({ name: "A", direction: Direction.LEFT, idx: 1 }); // ? move to static
+    this.contectors.push({ name: "A", direction: Direction.LEFT, idx: 1 });
   }
 
   async loadAssets(): Promise<void> {
@@ -103,32 +103,6 @@ export class NodeBase extends Entity {
         );
       }
     }
-    // ? move to static
-    /*     const s = CONECTOR_OFFSET;
-    const cs = CELL_SIZE; */
-    /*   const cx = this.transform.position.x + this.pivot.x;
-    const cy = this.transform.position.y + this.pivot.y; */
-    /*     const startX = -this._width / 2;
-    const startY = -this._height / 2;
-
-    for (let i = 0; i < this.contectors.length; i++) {
-      const con = this.contectors[i];
-      const of = cs * con.idx;
-
-      const sty =
-        con.direction == Direction.BOTTOM ? startY + this._height - s : startY;
-
-      const stx =
-        con.direction == Direction.RIGHT
-          ? startX + this._width - s * 2
-          : startX;
-
-      if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
-        con.box = new AABB().fromRect(stx + of, sty, s * 2, s * 2);
-      } else {
-        con.box = new AABB().fromRect(stx, sty + of, s * 2, s * 2);
-      }
-    } */
   }
 
   pointCollition(): undefined | Entity {
@@ -136,29 +110,18 @@ export class NodeBase extends Entity {
   }
 
   on_down(e: V2) {
-    const v = e.clone();
+    const v = this.transform.mulVInv(e.clone());
     for (const node of this.children) {
       if (node.collider?.pointInside(v)) {
-        console.log(node);
+        console.log((node as Connector).name);
       }
     }
-
-    /* //this.transform.mulVInv(v);
-    console.log(v); */
   }
 
   draw(): void {
     const canvas = this.context.canvas;
     const ctx = canvas.ctx;
     if (!this.texture) return;
-
-    /*     const s = CONECTOR_OFFSET;
-    const cs = CELL_SIZE;
-    const cx = this.transform.position.x;
-    const cy = this.transform.position.y;
-    const startX = cx - this._width / 2;
-    const startY = cy - this._height / 2; */
-
     ctx.save();
     ctx.transform(...this.transform.toTransformParams());
     ctx.drawImage(
@@ -168,30 +131,6 @@ export class NodeBase extends Entity {
       this._width,
       this._height
     );
-
-    /*     for (const con of this.contectors) {
-      ctx.beginPath();
-      const radius = GRID_DOT_RADIUS;
-      ctx.fillStyle = CONECTOR_COLOR;
-
-      const of = cs * con.idx;
-
-      const sty =
-        con.direction == Direction.BOTTOM ? startY + this._height - s : startY;
-
-      const stx =
-        con.direction == Direction.RIGHT
-          ? startX + this._width - s * 2
-          : startX;
-
-      if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
-        ctx.roundRect(stx + of, sty, s * 2, s * 2, radius);
-      } else {
-        ctx.roundRect(stx, sty + of, s * 2, s * 2, radius);
-      }
-
-      ctx.fill();
-    } */
   }
 
   afterDrawChilds(): void {
