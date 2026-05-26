@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { Engine, EngineContext, Entity } from "../core";
+import { Engine, EngineContext, Entity, V2 } from "../core";
 import { CELL_SIZE, FONTS } from "./constants";
 import { Grid } from "./entities/Grid";
 import { NodeBase } from "./entities/NodeBase";
@@ -24,7 +24,6 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     const node = new NodeBase(10, 3);
     node.position.y += 400;
     this.tree.setChild(grid, node);
-    //this.tree.addEntity(new NodeBase(100, 100));
     this.initEvents();
   }
 
@@ -39,9 +38,12 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     });
 
     this.mouse.on("down", (e) => {
-      const grid = this.tree.getEntity("GRID");
+      console.log(this.tree.pointCollition(e));
+      /* const grid = this.tree.getEntity("GRID");
+      console.log(grid?.collider?.pointInside(new V2(e.x, e.y))); */
+      /* const grid = this.tree.getEntity("GRID");
       const v = grid?.emit("toGridPos", e);
-      console.log(v);
+      console.log(v); */
     });
     /*     this.mouseController.on("down", ({ x, y }) => {
       if (this.rect) return;

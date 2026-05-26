@@ -1,4 +1,11 @@
-import { Entity, M3, V2 } from "@/engine/core";
+import {
+  AABB,
+  Collider,
+  Entity,
+  M3,
+  RectangleCollider,
+  V2,
+} from "@/engine/core";
 import {
   BACKGROUND,
   CELL_SIZE,
@@ -15,11 +22,18 @@ import {
 export class Grid extends Entity {
   private image!: HTMLImageElement;
   private pattern!: CanvasPattern;
-
-  private transform: M3 = new M3();
   private pivot: V2 = new V2();
   private scale: number = 1;
   private t: number = START_T;
+  public collider: RectangleCollider;
+
+  constructor() {
+    super();
+    this.collider = new RectangleCollider();
+    this.collider.setPosition(this.pivot);
+    this.aabb = new AABB(this.pivot);
+    this.name = "GRID";
+  }
 
   async loadAssets(): Promise<void> {
     this.context.assets.addAsset<true>(
@@ -67,6 +81,10 @@ export class Grid extends Entity {
     );
 
     this.context.tree.registerEntity("GRID", this);
+    this.collider.width = this.context.canvas.width;
+    this.collider.height = this.context.canvas.height;
+    this.aabb.width = this.context.canvas.width;
+    this.aabb.height = this.context.canvas.height;
   }
 
   on_drag({ dx, dy }: { dx: number; dy: number }) {
@@ -95,7 +113,6 @@ export class Grid extends Entity {
     this.position.x = x / newScale - x / this.scale + this.position.x;
     this.position.y = y / newScale - y / this.scale + this.position.y;
     this.scale = newScale;
-
     this.transform.transform(
       this.position.x,
       this.position.y,
@@ -104,13 +121,24 @@ export class Grid extends Entity {
       this.scale,
     );
   }
-
+  toRelativePosition(v: V2): V2 {
+    v.x = v.x / this.scale - this.position.x;
+    v.y = v.y / this.scale - this.position.y;
+    return v;
+  }
   on_toGridPos({ x, y }: { x: number; y: number }) {
     let _x = x / this.scale - this.position.x;
     let _y = y / this.scale - this.position.y;
     _x = Math.floor(_x / CELL_SIZE);
     _y = Math.floor(_y / CELL_SIZE);
     return { x: _x, y: _y };
+  }
+
+  on_pointInside({ x, y }: { x: number; y: number }) {
+    const _x = x / this.scale - this.position.x + this.context.canvas.width / 2;
+    const _y =
+      y / this.scale - this.position.y + this.context.canvas.height / 2;
+    return this.collider.pointInside(new V2(_x, _y));
   }
 
   draw(): void {

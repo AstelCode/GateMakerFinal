@@ -12,6 +12,10 @@ export class AABB {
     this.position = new V2();
   }
 
+  setPosition(position: V2) {
+    this.position = position;
+  }
+
   get left() {
     return this.position.x - this.width / 2;
   }

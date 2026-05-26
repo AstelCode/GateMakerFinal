@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EngineContext } from "./Engine";
 import { Entity } from "./Entity";
+import { V2 } from "./math";
 
 let i;
 export class EntityTree {
@@ -79,6 +80,19 @@ export class EntityTree {
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
         layers[i][j]._draw();
+      }
+    }
+  }
+
+  pointCollition(p: { x: number; y: number }) {
+    const v = new V2(p.x, p.y);
+    const layers = this.layers;
+    for (let i = 0; i < layers.length; i++) {
+      for (let j = 0; j < layers[i].length; j++) {
+        const entity = layers[i][j];
+        if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
+          return entity.pointCollition(v) ?? entity;
+        }
       }
     }
   }

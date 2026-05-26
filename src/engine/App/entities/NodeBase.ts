@@ -4,7 +4,6 @@ import {
   CONECTOR_COLOR,
   CONECTOR_OFFSET,
   GRID_DOT_RADIUS,
-  GRID_DOT_SIZE,
 } from "../constants";
 
 enum Direction {
@@ -33,14 +32,19 @@ export class NodeBase extends Entity {
     this._height = gridYSpan * CELL_SIZE + CONECTOR_OFFSET * 2;
     this.collider = new RectangleCollider(this._width, this._height);
     this.collider.setPosition(this.position);
+    this.aabb.width = this._width;
+    this.aabb.height = this._height;
+    this.aabb.setPosition(this.position);
     this.layer = 1;
     this.contectors = [];
+    this.name = "NODE";
+    if (gridXSpan % 2 == 0) this.position.x += CELL_SIZE / 2;
+    if (gridYSpan % 2 == 0) this.position.y += CELL_SIZE / 2;
 
-    if (gridXSpan % 2 == 0) this.pivot.x += CELL_SIZE / 2;
-    if (gridYSpan % 2 == 0) this.pivot.y += CELL_SIZE / 2;
-
-    this.contectors.push({ name: "A", direction: Direction.TOP, idx: 3 });
+    this.contectors.push({ name: "A", direction: Direction.LEFT, idx: 1 });
   }
+
+  updateLayout(): void {}
 
   async loadAssets(): Promise<void> {
     const w = this.width;
@@ -137,7 +141,7 @@ export class NodeBase extends Entity {
         con.direction == Direction.BOTTOM ? startY + this.height - s : startY;
 
       const stx =
-        con.direction == Direction.RIGHT ? startX + this.width - s : startX;
+        con.direction == Direction.RIGHT ? startX + this.width - s * 2 : startX;
 
       if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
         ctx.roundRect(stx + of, sty, s * 2, s * 2, radius);

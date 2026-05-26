@@ -5,6 +5,7 @@ import { Collider } from "./colliders/Collider";
 import { AABB } from "./AABB/AABB";
 import { V2 } from "./math/Vector";
 import { EngineContext } from "./Engine";
+import { M3 } from "./math";
 
 export class Entity {
   public readonly id: string;
@@ -12,13 +13,13 @@ export class Entity {
   public aabb: AABB;
   public position: V2;
   public layer: number;
-
+  public transform: M3 = new M3();
   protected context!: EngineContext<any>;
   protected children: Entity[];
-
   private parent?: Entity;
-
+  private updatedLayout: boolean;
   private updated: boolean;
+  public name: string;
 
   constructor() {
     this.id = uuid();
@@ -26,7 +27,9 @@ export class Entity {
     this.aabb = new AABB(this.position);
     this.layer = 0;
     this.children = [];
+    this.updatedLayout = false;
     this.updated = false;
+    this.name = "";
   }
 
   setContext(context: EngineContext<any>) {
@@ -36,6 +39,7 @@ export class Entity {
   addChild(child: Entity) {
     child.parent = child;
     this.children.push(child);
+    this.sortChildsLayers();
   }
 
   async _ready() {
@@ -50,17 +54,20 @@ export class Entity {
   draw() {}
   afterDrawChilds() {}
 
+  adjustPosition() {}
+
   updateLayout() {
     if (this.children.length == 0) return;
     this.aabb.combineMultiple(this.children.map((item) => item.getAABB()));
   }
 
   _updateLayout() {
-    if (this.updated) return;
+    if (this.updatedLayout) return;
     for (const item of this.children) {
       item._updateLayout();
     }
     this.updateLayout();
+    this.updatedLayout = true;
   }
 
   _update(time: number) {
@@ -68,6 +75,7 @@ export class Entity {
     this.update(time);
     this.children.forEach((item) => item._update(time));
     this.afterUpdateChilds(time);
+    this.updated = false;
   }
 
   _draw() {
@@ -78,8 +86,23 @@ export class Entity {
   sortChildsLayers() {
     this.children = this.children.sort((a, b) => (a.layer > b.layer ? 1 : 0));
   }
+
   getAABB() {
     return this.collider ? this.collider.getAABB() : this.aabb;
+  }
+
+  toRelativePosition(v: V2) {
+    return new V2();
+  }
+
+  pointCollition(v: V2): undefined | Entity {
+    const copy = this.toRelativePosition(v.clone());
+    for (let i = this.children.length - 1; i >= 0; i--) {
+      const entity = this.children[i];
+      if (entity.aabb.pointInside(copy) || entity.collider?.pointInside(copy)) {
+        return entity.pointCollition(copy) ?? entity;
+      }
+    }
   }
 
   emit(event: string, data?: any) {
