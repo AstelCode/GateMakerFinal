@@ -1,44 +1,62 @@
 import { V2 } from "../math/Vector";
 
 export class AABB {
-  public width: number;
-  public height: number;
   public position: V2;
   private static aux_v: V2 = new V2();
+
+  private leftRelative: number;
+  private rightRelative: number;
+  private topRelative: number;
+  private bottomRelative: number;
+
   constructor(position: V2 = new V2(), width: number = 0, height: number = 0) {
-    this.width = width;
+    /* this.width = width; */
     this.position = position;
-    this.height = height;
+    /*  this.height = height; */
     this.position = new V2();
+    this.leftRelative = -width / 2;
+    this.rightRelative = width / 2;
+    this.topRelative = height / 2;
+    this.bottomRelative = -height / 2;
+  }
+
+  set width(width: number) {
+    this.leftRelative = -width / 2;
+    this.rightRelative = width / 2;
+  }
+
+  set height(height: number) {
+    this.topRelative = height / 2;
+    this.bottomRelative = -height / 2;
   }
 
   setPosition(position: V2) {
     this.position = position;
   }
 
-  get left() {
-    return this.position.x - this.width / 2;
+  private get left() {
+    return this.position.x + this.leftRelative;
   }
 
-  get right() {
-    return this.position.x + this.width / 2;
+  private get right() {
+    return this.position.x + this.rightRelative;
   }
 
-  get top() {
-    return this.position.y + this.height / 2;
+  private get top() {
+    return this.position.y + this.topRelative;
   }
 
-  get bottom() {
-    return this.position.y - this.height / 2;
+  private get bottom() {
+    return this.position.y + this.bottomRelative;
   }
 
   public pointInside(v: V2): boolean {
     const d = AABB.aux_v.copy(v).subV(this.position);
     return (
-      -this.width / 2 < d.x &&
-      d.x < this.width / 2 &&
-      -this.height / 2 < d.y &&
-      d.y < this.height / 2
+      this.leftRelative < d.x &&
+      d.x < this.rightRelative &&
+      this.bottomRelative < d.y &&
+      d.y < this.topRelative
     );
   }
 
@@ -89,5 +107,31 @@ export class AABB {
 
     this.fromMaxAndMin(maxX, maxY, minX, minY);
     return this;
+  }
+
+  public combineMultipleRelative(aabbs: AABB[]) {
+    if (aabbs.length === 0) {
+      return this;
+    }
+
+    let maxX = this.rightRelative;
+    let minX = this.leftRelative;
+    let maxY = this.topRelative;
+    let minY = this.bottomRelative;
+
+    for (const aabb of aabbs) {
+      maxX = Math.max(maxX, aabb.right);
+      minX = Math.min(minX, aabb.left);
+      maxY = Math.max(maxY, aabb.top);
+      minY = Math.min(minY, aabb.bottom);
+    }
+
+    this.leftRelative = minX;
+    this.rightRelative = maxX;
+    this.topRelative = maxY;
+    this.bottomRelative = minY;
+
+    /* this.width = Math.max(Math.abs(maxX), Math.abs(minX)) * 2;
+    this.height = Math.max(Math.abs(maxY), Math.abs(minY)) * 2; */
   }
 }

@@ -23,6 +23,7 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     this.tree.setChild(grid, new NodeBase(10, 3));
     const node = new NodeBase(10, 3);
     node.transform.position.y += 400;
+    node.transform.updateMatriz();
     this.tree.setChild(grid, node);
     this.initEvents();
   }

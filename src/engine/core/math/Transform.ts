@@ -50,4 +50,15 @@ export class Transform {
   toDOMMatriz() {
     return this.domMatriz;
   }
+
+  toTransformParams(): [number, number, number, number, number, number] {
+    return [
+      this.domMatriz.a,
+      this.domMatriz.b,
+      this.domMatriz.c,
+      this.domMatriz.d,
+      this.domMatriz.e,
+      this.domMatriz.f,
+    ];
+  }
 }

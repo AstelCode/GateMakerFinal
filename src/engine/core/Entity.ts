@@ -17,9 +17,7 @@ export class Entity {
   protected context!: EngineContext<any>;
   protected children: Entity[];
   private parent?: Entity;
-  private updatedLayout: boolean;
-  private updated: boolean;
-  public name: string;
+  public type: string;
 
   constructor() {
     this.id = uuid();
@@ -27,9 +25,7 @@ export class Entity {
     this.aabb = new AABB(this.transform.position);
     this.layer = 0;
     this.children = [];
-    this.updatedLayout = false;
-    this.updated = false;
-    this.name = "";
+    this.type = "";
   }
 
   setContext(context: EngineContext<any>) {
@@ -58,24 +54,15 @@ export class Entity {
 
   updateLayout() {
     if (this.children.length == 0) return;
-    this.aabb.combineMultiple(this.children.map((item) => item.getAABB()));
-  }
-
-  _updateLayout() {
-    if (this.updatedLayout) return;
-    for (const item of this.children) {
-      item._updateLayout();
-    }
-    this.updateLayout();
-    this.updatedLayout = true;
+    this.aabb.combineMultipleRelative(
+      this.children.map((item) => item.getAABB())
+    );
   }
 
   _update(time: number) {
-    if (this.updated) return;
     this.update(time);
     this.children.forEach((item) => item._update(time));
     this.afterUpdateChilds(time);
-    this.updated = false;
   }
 
   _draw() {

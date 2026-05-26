@@ -102,7 +102,6 @@ export class EntityTree {
   update(time: number) {
     for (let i = 0; i < this.entities.length; i++) {
       this.entities[i]._update(time);
-      /* this.entities[i]._updateLayout(); */
     }
   }
 

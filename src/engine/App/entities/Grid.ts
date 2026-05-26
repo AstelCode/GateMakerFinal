@@ -24,7 +24,7 @@ export class Grid extends Entity {
     this.collider = new RectangleCollider();
     this.collider.setPosition(this.pivot);
     this.aabb = new AABB(this.pivot);
-    this.name = "GRID";
+    this.type = "GRID";
   }
 
   async loadAssets(): Promise<void> {
