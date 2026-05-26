@@ -57,14 +57,14 @@ export class EntityTree {
 
   removeEntity(entity: Entity) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id,
+      (item) => item.id != entity.id
     );
     this._entities = this._entities.filter((item) => item.id != entity.id);
   }
 
   changeLayer(entity: Entity, newLayer: number) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id,
+      (item) => item.id != entity.id
     );
     entity.layer = newLayer;
     if (this._layers.length < entity.layer) {
@@ -89,12 +89,14 @@ export class EntityTree {
     const layers = this.layers;
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
-        const entity = layers[i][j];
+        let entity = layers[i][j];
         if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
-          return entity.pointCollition(v) ?? entity;
+          entity = entity.pointCollition(v) ?? entity;
+          return { entity, v };
         }
       }
     }
+    return { entity: undefined, v };
   }
 
   update(time: number) {

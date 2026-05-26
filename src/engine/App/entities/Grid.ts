@@ -1,11 +1,4 @@
-import {
-  AABB,
-  Collider,
-  Entity,
-  M3,
-  RectangleCollider,
-  V2,
-} from "@/engine/core";
+import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
 import {
   BACKGROUND,
   CELL_SIZE,
@@ -23,7 +16,6 @@ export class Grid extends Entity {
   private image!: HTMLImageElement;
   private pattern!: CanvasPattern;
   private pivot: V2 = new V2();
-  private scale: number = 1;
   private t: number = START_T;
   public collider: RectangleCollider;
 
@@ -51,11 +43,11 @@ export class Grid extends Entity {
           CELL_SIZE / 2 - size / 2,
           size,
           size,
-          radius,
+          radius
         );
         ctx.fill();
       },
-      { image: true, width: CELL_SIZE, height: CELL_SIZE },
+      { image: true, width: CELL_SIZE, height: CELL_SIZE }
     );
     await this.context.assets.load();
     this.context.assets.getAssetSync("GRID_PATTERN", (data) => {
@@ -64,39 +56,25 @@ export class Grid extends Entity {
   }
 
   ready(): void {
-    this.pivot.x = this.context.canvas.width / 2;
-    this.pivot.y = this.context.canvas.height / 2;
-    this.position.x = this.pivot.x;
-    this.position.y = this.pivot.y;
-
-    const range = MAX_ZOOM - MIN_ZOOM;
-    this.scale = range * smoothZoom(this.t) + MIN_ZOOM;
-
-    this.transform.transform(
-      this.position.x,
-      this.position.y,
-      0,
-      this.scale,
-      this.scale,
-    );
-
     this.context.tree.registerEntity("GRID", this);
+
     this.collider.width = this.context.canvas.width;
     this.collider.height = this.context.canvas.height;
+
     this.aabb.width = this.context.canvas.width;
     this.aabb.height = this.context.canvas.height;
+
+    this.pivot.x = this.context.canvas.width / 2;
+    this.pivot.y = this.context.canvas.height / 2;
+
+    this.transform.position.copy(this.pivot);
+    const range = MAX_ZOOM - MIN_ZOOM;
+    this.transform.scale = range * smoothZoom(this.t) + MIN_ZOOM;
+    this.transform.updateMatriz();
   }
 
   on_drag({ dx, dy }: { dx: number; dy: number }) {
-    this.position.x += dx / this.scale;
-    this.position.y += dy / this.scale;
-    this.transform.transform(
-      this.position.x,
-      this.position.y,
-      0,
-      this.scale,
-      this.scale,
-    );
+    this.transform.translate({ x: dx, y: dy });
   }
 
   on_wheel({ delta, x, y }: { delta: number; x: number; y: number }) {
@@ -110,35 +88,15 @@ export class Grid extends Entity {
     const range = MAX_ZOOM - MIN_ZOOM;
     newScale = range * smoothZoom(this.t) + MIN_ZOOM;
 
-    this.position.x = x / newScale - x / this.scale + this.position.x;
-    this.position.y = y / newScale - y / this.scale + this.position.y;
-    this.scale = newScale;
-    this.transform.transform(
-      this.position.x,
-      this.position.y,
-      0,
-      this.scale,
-      this.scale,
-    );
-  }
-  toRelativePosition(v: V2): V2 {
-    v.x = v.x / this.scale - this.position.x;
-    v.y = v.y / this.scale - this.position.y;
-    return v;
-  }
-  on_toGridPos({ x, y }: { x: number; y: number }) {
-    let _x = x / this.scale - this.position.x;
-    let _y = y / this.scale - this.position.y;
-    _x = Math.floor(_x / CELL_SIZE);
-    _y = Math.floor(_y / CELL_SIZE);
-    return { x: _x, y: _y };
+    this.transform.zoomInPoint(newScale, { x, y });
   }
 
-  on_pointInside({ x, y }: { x: number; y: number }) {
-    const _x = x / this.scale - this.position.x + this.context.canvas.width / 2;
-    const _y =
-      y / this.scale - this.position.y + this.context.canvas.height / 2;
-    return this.collider.pointInside(new V2(_x, _y));
+  on_toGridPos({ x, y }: { x: number; y: number }) {
+    const v = new V2(x, y);
+    this.transform.mulVInv(v);
+    v.x = Math.floor(v.x / CELL_SIZE);
+    v.y = Math.floor(v.y / CELL_SIZE);
+    return { x: v.x, y: v.y };
   }
 
   draw(): void {

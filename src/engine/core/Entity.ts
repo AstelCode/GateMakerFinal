@@ -5,15 +5,15 @@ import { Collider } from "./colliders/Collider";
 import { AABB } from "./AABB/AABB";
 import { V2 } from "./math/Vector";
 import { EngineContext } from "./Engine";
-import { M3 } from "./math";
+import { Transform } from "./math/Transform";
 
 export class Entity {
   public readonly id: string;
   public collider?: Collider;
   public aabb: AABB;
-  public position: V2;
+  /*  public position: V2; */
   public layer: number;
-  public transform: M3 = new M3();
+  public transform: Transform;
   protected context!: EngineContext<any>;
   protected children: Entity[];
   private parent?: Entity;
@@ -23,8 +23,8 @@ export class Entity {
 
   constructor() {
     this.id = uuid();
-    this.position = new V2();
-    this.aabb = new AABB(this.position);
+    this.transform = new Transform();
+    this.aabb = new AABB(this.transform.position);
     this.layer = 0;
     this.children = [];
     this.updatedLayout = false;
@@ -83,6 +83,7 @@ export class Entity {
     this.children.forEach((item) => item._draw());
     this.afterDrawChilds();
   }
+
   sortChildsLayers() {
     this.children = this.children.sort((a, b) => (a.layer > b.layer ? 1 : 0));
   }
@@ -91,25 +92,22 @@ export class Entity {
     return this.collider ? this.collider.getAABB() : this.aabb;
   }
 
-  toRelativePosition(v: V2) {
-    return new V2();
-  }
-
   pointCollition(v: V2): undefined | Entity {
-    const copy = this.toRelativePosition(v.clone());
+    const v1 = this.transform.mulVInv(v);
     for (let i = this.children.length - 1; i >= 0; i--) {
-      const entity = this.children[i];
-      if (entity.aabb.pointInside(copy) || entity.collider?.pointInside(copy)) {
-        return entity.pointCollition(copy) ?? entity;
+      let entity = this.children[i];
+      if (entity.aabb.pointInside(v1) || entity.collider?.pointInside(v1)) {
+        entity = entity.pointCollition(v1) ?? entity;
+        return entity;
       }
     }
   }
 
-  emit(event: string, data?: any) {
+  emit(event: string, ...data: any) {
     const methodName = "on_" + event;
     const method = (this as any)[methodName];
     if (typeof method === "function") {
-      return method.call(this, data);
+      return method.call(this, ...data);
     }
     return undefined;
   }

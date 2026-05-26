@@ -22,7 +22,7 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     this.tree.addEntity(grid);
     this.tree.setChild(grid, new NodeBase(10, 3));
     const node = new NodeBase(10, 3);
-    node.position.y += 400;
+    node.transform.position.y += 400;
     this.tree.setChild(grid, node);
     this.initEvents();
   }
@@ -38,7 +38,8 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     });
 
     this.mouse.on("down", (e) => {
-      console.log(this.tree.pointCollition(e));
+      const { entity, v } = this.tree.pointCollition(e);
+      entity?.emit("down", v, e);
       /* const grid = this.tree.getEntity("GRID");
       console.log(grid?.collider?.pointInside(new V2(e.x, e.y))); */
       /* const grid = this.tree.getEntity("GRID");

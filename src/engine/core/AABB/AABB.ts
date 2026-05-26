@@ -47,6 +47,17 @@ export class AABB {
     this.position.y = (minY + maxY) / 2;
     this.width = maxX - minX;
     this.height = maxY - minY;
+    return this;
+  }
+
+  public fromRect(
+    startX: number,
+    startY: number,
+    width: number,
+    height: number
+  ) {
+    this.fromMaxAndMin(startX + width, startY + height, startX, startY);
+    return this;
   }
 
   public combine(other: AABB): AABB {
