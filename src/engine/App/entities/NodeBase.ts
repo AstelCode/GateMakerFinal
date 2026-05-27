@@ -37,7 +37,7 @@ export class NodeBase extends Entity {
     this.aabb.setPosition(this.position);
     this.layer = 1;
     this.contectors = [];
-    this.name = "NODE";
+    this.name = "NODE_BASE";
     if (gridXSpan % 2 == 0) this.position.x += CELL_SIZE / 2;
     if (gridYSpan % 2 == 0) this.position.y += CELL_SIZE / 2;
 
