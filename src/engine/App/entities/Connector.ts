@@ -1,9 +1,19 @@
 import { Entity, RectangleCollider, V2 } from "@/engine/core";
-import { CONECTOR_COLOR, CONECTOR_SIZE, GRID_DOT_RADIUS } from "../constants";
+import {
+  CONECTOR_COLOR,
+  CONECTOR_COLOR_HOVER,
+  CONECTOR_SIZE,
+  GRID_DOT_RADIUS,
+} from "../constants";
 
 export class Connector extends Entity {
   public collider: RectangleCollider;
-  constructor(public name: string, position: V2) {
+  public color: string;
+
+  constructor(
+    public name: string,
+    position: V2,
+  ) {
     super();
     this.collider = new RectangleCollider();
     this.collider.setPosition(this.transform.position);
@@ -14,6 +24,15 @@ export class Connector extends Entity {
     this.aabb.height = CONECTOR_SIZE;
     this.transform.position.copy(position);
     this.transform.updateMatriz();
+    this.color = CONECTOR_COLOR;
+  }
+
+  on_hover() {
+    this.color = CONECTOR_COLOR_HOVER;
+  }
+
+  on_leave() {
+    this.color = CONECTOR_COLOR;
   }
 
   draw(): void {
@@ -22,13 +41,13 @@ export class Connector extends Entity {
     ctx.save();
     ctx.beginPath();
     ctx.transform(...this.transform.toTransformParams());
-    ctx.fillStyle = CONECTOR_COLOR;
+    ctx.fillStyle = this.color;
     ctx.roundRect(
       -CONECTOR_SIZE / 2,
       -CONECTOR_SIZE / 2,
       CONECTOR_SIZE,
       CONECTOR_SIZE,
-      GRID_DOT_RADIUS
+      GRID_DOT_RADIUS,
     );
     ctx.fill();
     ctx.restore();

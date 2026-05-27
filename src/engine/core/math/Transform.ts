@@ -61,4 +61,15 @@ export class Transform {
       this.domMatriz.f,
     ];
   }
+
+  applyToCanvas(ctx: CanvasRenderingContext2D) {
+    ctx.transform(
+      this.domMatriz.a,
+      this.domMatriz.b,
+      this.domMatriz.c,
+      this.domMatriz.d,
+      this.domMatriz.e,
+      this.domMatriz.f,
+    );
+  }
 }

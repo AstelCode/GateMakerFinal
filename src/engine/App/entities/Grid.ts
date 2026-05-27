@@ -13,8 +13,7 @@ import {
 } from "../constants";
 
 export class Grid extends Entity {
-  private image!: HTMLImageElement;
-  private pattern!: CanvasPattern;
+  private texture!: HTMLImageElement;
   private pivot: V2 = new V2();
   private t: number = START_T;
   public collider: RectangleCollider;
@@ -43,15 +42,15 @@ export class Grid extends Entity {
           CELL_SIZE / 2 - size / 2,
           size,
           size,
-          radius
+          radius,
         );
         ctx.fill();
       },
-      { image: true, width: CELL_SIZE, height: CELL_SIZE }
+      { image: true, width: CELL_SIZE, height: CELL_SIZE },
     );
     await this.context.assets.load();
     this.context.assets.getAssetSync("GRID_PATTERN", (data) => {
-      this.image = data as HTMLImageElement;
+      this.texture = data as HTMLImageElement;
     });
   }
 
@@ -102,15 +101,10 @@ export class Grid extends Entity {
   draw(): void {
     const canvas = this.context.canvas;
     const ctx = canvas.ctx;
-    if (this.image && !this.pattern) {
-      this.pattern = ctx.createPattern(this.image, "repeat")!;
-    }
-    if (!this.pattern) return;
+    if (!this.texture) return;
 
-    this.pattern.setTransform(this.transform.toDOMMatriz());
-
-    ctx.fillStyle = this.pattern;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    canvas.createPattern("GRID", this.texture, "repeat", this.transform);
+    canvas.fillRect(0, 0, canvas.width, canvas.height, { pattern: "GRID" });
 
     ctx.save();
     ctx.setTransform(this.transform.toDOMMatriz());

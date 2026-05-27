@@ -55,7 +55,7 @@ export class Entity {
   updateLayout() {
     if (this.children.length == 0) return;
     this.aabb.combineMultipleRelative(
-      this.children.map((item) => item.getAABB())
+      this.children.map((item) => item.getAABB()),
     );
   }
 
@@ -66,6 +66,7 @@ export class Entity {
   }
 
   _draw() {
+    const ctx = this.context.canvas.ctx;
     this.draw();
     this.children.forEach((item) => item._draw());
     this.afterDrawChilds();

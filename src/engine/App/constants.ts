@@ -13,5 +13,6 @@ export const GRID_DOT_RADIUS = 4;
 export const GRID_DOT_COLOR = "#434343";
 
 export const BACKGROUND = "#080808";
+export const CONECTOR_COLOR_HOVER = "#76e68e";
 export const CONECTOR_COLOR = "#dfdfdf";
 export const CONECTOR_SIZE = 24;

@@ -118,6 +118,22 @@ export class NodeBase extends Entity {
     }
   }
 
+  private lastEntity?: Entity;
+  on_hover(e: V2) {
+    const v = this.transform.mulVInv(e.clone());
+    let selectedNode: Entity | undefined = undefined;
+    for (const node of this.children) {
+      if (node.collider?.pointInside(v)) {
+        selectedNode = node;
+      }
+    }
+    if (this.lastEntity && this.lastEntity != selectedNode) {
+      this.lastEntity.emit("leave");
+    }
+    selectedNode?.emit("hover");
+    this.lastEntity = selectedNode;
+  }
+
   draw(): void {
     const canvas = this.context.canvas;
     const ctx = canvas.ctx;
