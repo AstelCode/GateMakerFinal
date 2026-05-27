@@ -14,4 +14,4 @@ export const GRID_DOT_COLOR = "#434343";
 
 export const BACKGROUND = "#080808";
 export const CONECTOR_COLOR = "#dfdfdf";
-export const CONECTOR_OFFSET = 12;
+export const CONECTOR_SIZE = 24;
