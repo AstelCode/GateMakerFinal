@@ -1,6 +1,7 @@
 import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
 import { CELL_SIZE } from "../constants";
 import { Connector } from "./Connector";
+import { ITextureData } from "@/engine/core/assetManager";
 
 enum Direction {
   TOP = 0,
@@ -45,38 +46,40 @@ export class NodeBase extends Entity {
   async loadAssets(): Promise<void> {
     const w = this._width;
     const h = this._height;
-    this.context.assets.addAsset<true>(
-      "NODE_BACKGROUND",
-      async ({ ctx }) => {
-        const margin = 2;
-        const r = 8;
-        ctx.beginPath();
-        ctx.fillStyle = "#585d69";
-        ctx.roundRect(0, 0, w, h, r);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.fillStyle = "#1e1f23";
-        ctx.roundRect(margin, margin, w - margin * 2, h - margin * 2, r);
-        ctx.fill();
 
-        ctx.beginPath();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "white";
-        ctx.font = "25px Orbitron";
-        ctx.fillText("NODE", w / 2, h / 2);
-        ctx.fill();
-      },
+    this.context.assets.register<ITextureData>(
+      "texture",
+      "NODE_BACKGROUND",
       {
-        image: true,
         width: w,
         height: h,
+        callback: (ctx) => {
+          const margin = 2;
+          const r = 8;
+          ctx.beginPath();
+          ctx.fillStyle = "#585d69";
+          ctx.roundRect(0, 0, w, h, r);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.fillStyle = "#1e1f23";
+          ctx.roundRect(margin, margin, w - margin * 2, h - margin * 2, r);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "white";
+          ctx.font = "25px Orbitron";
+          ctx.fillText("NODE", w / 2, h / 2);
+          ctx.fill();
+        },
+      },
+      (texture) => {
+        console.log(texture);
+        this.texture = texture;
       },
     );
     await this.context.assets.load();
-    this.context.assets.getAssetSync("NODE_BACKGROUND", (texture) => {
-      this.texture = texture;
-    });
   }
 
   ready(): void {
@@ -135,23 +138,13 @@ export class NodeBase extends Entity {
   }
 
   draw(): void {
-    const canvas = this.context.canvas;
-    const ctx = canvas.ctx;
-    if (!this.texture) return;
-    ctx.save();
-    ctx.transform(...this.transform.toTransformParams());
-    ctx.drawImage(
-      this.texture,
-      -this._width / 2,
-      -this._height / 2,
-      this._width,
-      this._height,
-    );
+    const r = this.context.renderer;
+    r.save();
+    r.transform(this.transform);
+    r.drawImageCenter(this.texture, this._width, this._height);
   }
 
   afterDrawChilds(): void {
-    const canvas = this.context.canvas;
-    const ctx = canvas.ctx;
-    ctx.restore();
+    this.context.renderer.restore();
   }
 }

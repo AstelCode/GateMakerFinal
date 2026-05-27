@@ -2,7 +2,7 @@ export * from "./Engine";
 export * from "./Entity";
 export * from "./EntityTree";
 export * from "./math";
-export * from "./handlers";
+export * from "./renderer";
 export * from "./events";
 export * from "./controllers";
 export * from "./AABB";

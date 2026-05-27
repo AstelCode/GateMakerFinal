@@ -1,113 +1,61 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/* import { CanvasHandler } from "../handlers"; */
-import { CanvasRing } from "./CanvasRing";
-
-type AssetLoaderArg = {
-  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-};
-type AssetLoader<T> = T extends true
-  ? (arg: AssetLoaderArg) => Promise<any>
-  : () => Promise<any>;
-type AssetOptions = { image?: boolean; width?: number; height?: number };
-type AssetInfo = {
-  name: string;
-  loader: AssetLoader<true>;
-  options: AssetOptions;
-  callbacks: ((data: any) => void)[];
-};
-type AssetGetCallback = { name: string; callback: (data: any) => void };
+import { ILoader } from "./loaders/ILoader";
 
 export class AssetManager {
-  /*  private static initCanvas() {
-    if (this.canvas) return;
-    this.canvas = new CanvasHandler();
-  } */
-
+  private loaders: Map<string, ILoader<any>>;
   private loadedAssets: Map<string, any> = new Map();
-  private queue: AssetInfo[] = [];
-  private assetsInfo: Map<string, AssetInfo> = new Map();
-  private callbacks: Record<string, AssetGetCallback[]> = {};
+  private assetsRegistred: Record<string, boolean>;
+  private queue: Array<() => Promise<{ name: string; data: any }>>;
 
   constructor() {
-    CanvasRing.initCanvasRing();
-    /*  AssetManager.initCanvas(); */
+    this.loaders = new Map();
+    this.assetsRegistred = {};
+    this.queue = [];
   }
 
-  public addAsset<T>(
-    name: string,
-    loader: AssetLoader<T>,
-    options: AssetOptions = {},
-    callback?: (data: any) => void,
-  ) {
-    if (this.assetsInfo.has(name)) return;
-    const assetInfo: AssetInfo = {
-      name,
-      loader,
-      options,
-      callbacks: callback ? [callback] : [],
-    };
-    this.assetsInfo.set(name, assetInfo);
-    this.queue.push(assetInfo);
+  addLoader(loader: ILoader<any>) {
+    this.loaders.set(loader.name, loader);
   }
 
-  public getAsset(name: string) {
+  get(name: string) {
     return this.loadedAssets.get(name);
   }
 
-  public getAssetSync(name: string, callback: (data: any) => void) {
-    // Si el asset ya está cargado, ejecutar el callback inmediatamente
-    if (this.loadedAssets.has(name)) {
-      callback(this.loadedAssets.get(name));
+  register<T>(
+    loaderName: string,
+    name: string,
+    data: T,
+    onLoaded?: (data: any) => void,
+  ) {
+    if (this.assetsRegistred[name] && this.loadedAssets.has(name)) {
+      onLoaded?.(this.loadedAssets.get(name));
       return;
     }
-    // Si no, registrar el callback para cuando se cargue
-    this.callbacks[name] ??= [];
-    this.callbacks[name].push({ name, callback });
+
+    const loader = this.loaders.get(loaderName);
+    if (!loader) return;
+
+    const callback = loader.register(name, data, ({ name, data }) => {
+      this.loadedAssets.set(name, data);
+      onLoaded?.(data);
+    });
+    this.assetsRegistred[name] = true;
+    this.queue.push(callback);
   }
 
-  public async load() {
-    const loaders: Promise<void>[] = [];
-    for (let i = 0; i < this.queue.length; i++) {
-      const loader = async () => {
-        const asset = this.queue.pop();
-        if (!asset) return;
-        if (this.loadedAssets.has(asset.name)) return;
-
-        const { canvas, ctx } = CanvasRing.getCanvas();
-        let result;
-        if (asset.options.image) {
-          canvas.width = asset.options.width || 0;
-          canvas.height = asset.options.height || 0;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          result = await asset.loader({
-            ctx,
-          });
-          result = await CanvasRing.toImage(canvas);
-        } else {
-          debugger;
-          result = await (asset.loader as AssetLoader<false>)();
-        }
-
-        // Ejecutar callbacks registrados en addAsset
-        if (asset.callbacks) {
-          asset.callbacks.forEach((callback) => callback(result));
-        }
-
-        // Ejecutar callbacks registrados con getAssetSync
-        if (this.callbacks[asset.name]) {
-          this.callbacks[asset.name].forEach((item) => item.callback(result));
-          this.callbacks[asset.name].length = 0;
-        }
-        this.loadedAssets.set(asset.name, result);
-      };
-      loaders.push(loader());
+  async load() {
+    const promises: Array<Promise<{ name: string; data: any }>> = [];
+    while (this.queue.length > 0) {
+      const promise = this.queue.pop();
+      if (!promise) break;
+      promises.push(promise());
     }
-    await Promise.all(loaders);
+    await Promise.all(promises);
   }
 
-  public destroy() {
+  destroy() {
     this.loadedAssets.clear();
-    this.assetsInfo.clear();
+    this.loaders.clear();
   }
 }

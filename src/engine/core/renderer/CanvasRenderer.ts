@@ -1,4 +1,5 @@
 import { Transform } from "../math/Transform";
+import { IRenderer } from "./IRenderer";
 
 interface Options {
   autoResize: boolean;
@@ -12,10 +13,15 @@ interface RenderStyle {
   fill?: FillStyle;
 }
 
-export class CanvasHandler {
+export class CanvasRenderer implements IRenderer {
   private _canvas: HTMLCanvasElement;
-  private _ctx: CanvasRenderingContext2D;
+  private ctx: CanvasRenderingContext2D;
   private _patterns: Map<string, CanvasPattern>;
+
+  private onResize = () => {
+    this._canvas.width = innerWidth;
+    this._canvas.height = innerHeight;
+  };
 
   constructor(canvas?: HTMLCanvasElement, options?: Options) {
     if (!canvas) {
@@ -23,7 +29,7 @@ export class CanvasHandler {
     }
 
     this._canvas = canvas;
-    this._ctx = this._canvas.getContext("2d")!;
+    this.ctx = this._canvas.getContext("2d")!;
     this._patterns = new Map();
 
     if (options?.autoResize) window.addEventListener("resize", this.onResize);
@@ -52,11 +58,7 @@ export class CanvasHandler {
     this.ctx.canvas.height = value;
   }
 
-  get ctx() {
-    return this._ctx;
-  }
-
-  public async toImage() {
+  async toImage() {
     return await new Promise<HTMLImageElement>((res, rej) => {
       this.canvas.toBlob((blob) => {
         if (!blob) {
@@ -71,11 +73,11 @@ export class CanvasHandler {
     });
   }
 
-  public clearScreen() {
+  clearScreen() {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
 
-  public drawFPS(fps: number) {
+  drawFPS(fps: number) {
     this.ctx.save();
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, 80, 20);
@@ -87,35 +89,68 @@ export class CanvasHandler {
     this.ctx.restore();
   }
 
-  public createPattern(
-    name: string,
-    texture: HTMLImageElement,
-    repetition: string,
-    transform?: Transform,
-  ) {
-    if (this._patterns.has(name)) {
-      if (transform)
-        this._patterns.get(name)?.setTransform(transform.toDOMMatriz());
-      return;
-    }
-    this._patterns.set(name, this.ctx.createPattern(texture, repetition)!);
-  }
-
-  public fillRect(
+  fillRect(
     x: number,
     y: number,
     width: number,
     height: number,
-    config: FillStyle = {},
+    radius?: number,
   ) {
-    if (config.pattern && this._patterns.has(config.pattern)) {
-      this.ctx.fillStyle = this._patterns.get(config.pattern!)!;
+    if (radius) {
+      this.ctx.beginPath();
+      this.ctx.roundRect(x, y, width, height, radius);
+      this.ctx.fill();
+    } else {
     }
     this.ctx.fillRect(x, y, width, height);
   }
 
-  private onResize = () => {
-    this._canvas.width = innerWidth;
-    this._canvas.height = innerHeight;
-  };
+  drawCircle(x: number, y: number, radius: number): void {
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.fill();
+  }
+
+  fill(name: string): void {
+    this.ctx.fillStyle = name;
+  }
+
+  drawImageCenter(
+    texture: HTMLImageElement,
+    width: number,
+    height: number,
+  ): void {
+    if (!texture) return;
+    this.ctx.drawImage(texture, -width / 2, -height / 2, width, height);
+  }
+
+  transform(transform: Transform): void {
+    transform.applyToCanvas(this.ctx);
+  }
+
+  applyPattern(
+    name: string,
+    texture: HTMLImageElement,
+    repetition: string,
+    props?: { transform?: Transform },
+  ): void {
+    if (!texture) return;
+    if (this._patterns.has(name)) {
+      if (props?.transform)
+        this._patterns.get(name)?.setTransform(props.transform!.toDOMMatriz());
+      this.ctx.fillStyle = this._patterns.get(name)!;
+      return;
+    }
+    const pattern = this.ctx.createPattern(texture, repetition)!;
+    this._patterns.set(name, pattern);
+    this.ctx.fillStyle = pattern;
+  }
+
+  save() {
+    this.ctx.save();
+  }
+
+  restore(): void {
+    this.ctx.restore();
+  }
 }

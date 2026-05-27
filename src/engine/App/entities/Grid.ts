@@ -11,6 +11,7 @@ import {
   START_T,
   ZOOM_STEP,
 } from "../constants";
+import { ITextureData } from "@/engine/core/assetManager";
 
 export class Grid extends Entity {
   private texture!: HTMLImageElement;
@@ -27,44 +28,48 @@ export class Grid extends Entity {
   }
 
   async loadAssets(): Promise<void> {
-    this.context.assets.addAsset<true>(
+    this.context.assets.register<ITextureData>(
+      "texture",
       "GRID_PATTERN",
-      async ({ ctx }) => {
-        ctx.fillStyle = BACKGROUND;
-        ctx.fillRect(0, 0, CELL_SIZE, CELL_SIZE);
-        const size = GRID_DOT_SIZE;
-        const radius = GRID_DOT_RADIUS;
-        ctx.fillStyle = GRID_DOT_COLOR;
+      {
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        callback: (ctx) => {
+          ctx.fillStyle = BACKGROUND;
+          ctx.fillRect(0, 0, CELL_SIZE, CELL_SIZE);
+          const size = GRID_DOT_SIZE;
+          const radius = GRID_DOT_RADIUS;
+          ctx.fillStyle = GRID_DOT_COLOR;
 
-        ctx.beginPath();
-        ctx.roundRect(
-          CELL_SIZE / 2 - size / 2,
-          CELL_SIZE / 2 - size / 2,
-          size,
-          size,
-          radius,
-        );
-        ctx.fill();
+          ctx.beginPath();
+          ctx.roundRect(
+            CELL_SIZE / 2 - size / 2,
+            CELL_SIZE / 2 - size / 2,
+            size,
+            size,
+            radius,
+          );
+          ctx.fill();
+        },
       },
-      { image: true, width: CELL_SIZE, height: CELL_SIZE },
+      (data) => {
+        this.texture = data as HTMLImageElement;
+      },
     );
     await this.context.assets.load();
-    this.context.assets.getAssetSync("GRID_PATTERN", (data) => {
-      this.texture = data as HTMLImageElement;
-    });
   }
 
   ready(): void {
     this.context.tree.registerEntity("GRID", this);
 
-    this.collider.width = this.context.canvas.width;
-    this.collider.height = this.context.canvas.height;
+    this.collider.width = this.context.renderer.width;
+    this.collider.height = this.context.renderer.height;
 
-    this.aabb.width = this.context.canvas.width;
-    this.aabb.height = this.context.canvas.height;
+    this.aabb.width = this.context.renderer.width;
+    this.aabb.height = this.context.renderer.height;
 
-    this.pivot.x = this.context.canvas.width / 2;
-    this.pivot.y = this.context.canvas.height / 2;
+    this.pivot.x = this.context.renderer.width / 2;
+    this.pivot.y = this.context.renderer.height / 2;
 
     this.transform.position.copy(this.pivot);
     const range = MAX_ZOOM - MIN_ZOOM;
@@ -99,24 +104,18 @@ export class Grid extends Entity {
   }
 
   draw(): void {
-    const canvas = this.context.canvas;
-    const ctx = canvas.ctx;
-    if (!this.texture) return;
-
-    canvas.createPattern("GRID", this.texture, "repeat", this.transform);
-    canvas.fillRect(0, 0, canvas.width, canvas.height, { pattern: "GRID" });
-
-    ctx.save();
-    ctx.setTransform(this.transform.toDOMMatriz());
-    ctx.beginPath();
-    ctx.fillStyle = "yellow";
-    ctx.arc(0, 0, 5, 0, Math.PI * 2);
-    ctx.fill();
+    const r = this.context.renderer;
+    r.applyPattern("GRID", this.texture, "repeat", {
+      transform: this.transform,
+    });
+    r.fillRect(0, 0, r.width, r.height);
+    r.save();
+    r.transform(this.transform);
+    r.fill("yellow");
+    r.drawCircle(0, 0, 5);
   }
 
   afterDrawChilds(): void {
-    const canvas = this.context.canvas;
-    const ctx = canvas.ctx;
-    ctx.restore();
+    this.context.renderer.restore();
   }
 }

@@ -66,7 +66,7 @@ export class Entity {
   }
 
   _draw() {
-    const ctx = this.context.canvas.ctx;
+    const ctx = this.context.renderer.ctx;
     this.draw();
     this.children.forEach((item) => item._draw());
     this.afterDrawChilds();

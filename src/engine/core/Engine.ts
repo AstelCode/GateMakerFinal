@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { KeyboardController } from "./controllers/KeyboardController";
 import { MouseController } from "./controllers/MouseController";
-import { CanvasHandler } from "./handlers/CanvasHandler";
+import { CanvasRenderer } from "./renderer/CanvasRenderer";
 import { EventsHandler } from "./events/EventsHandler";
 import { EntityTree } from "./EntityTree";
 import { AssetManager } from "./assetManager/AssetManager";
-import { FontLoader } from "./loaders/FontLoader";
+import { FontLoader, TextureLoader } from "./assetManager";
+import { IRenderer } from "./renderer";
 
 export interface EngineContext<T extends Record<string, any>> {
   mouse: MouseController;
@@ -14,7 +15,7 @@ export interface EngineContext<T extends Record<string, any>> {
   events: EventsHandler<T>;
   tree: EntityTree;
   assets: AssetManager;
-  canvas: CanvasHandler;
+  renderer: IRenderer;
 }
 
 export class Engine<
@@ -24,21 +25,21 @@ export class Engine<
   protected mouse: MouseController;
   protected keyboard: KeyboardController;
   protected events: EventsHandler<T>;
-  protected canvas: CanvasHandler;
+  protected renderer: IRenderer;
   protected requestAnimationFrameId!: number;
   protected context: Context;
   protected tree: EntityTree;
   protected assets: AssetManager;
-  protected fontsLoader: FontLoader;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = new CanvasHandler(canvas, { autoResize: true });
+    this.renderer = new CanvasRenderer(canvas, { autoResize: true });
     this.mouse = new MouseController(canvas);
     this.keyboard = new KeyboardController();
     this.events = new EventsHandler();
     this.assets = new AssetManager();
     this.tree = new EntityTree();
-    this.fontsLoader = new FontLoader();
+    this.assets.addLoader(new TextureLoader());
+    this.assets.addLoader(new FontLoader());
     this.context = this.createContext();
   }
 
@@ -49,7 +50,7 @@ export class Engine<
       events: this.events,
       tree: this.tree,
       assets: this.assets,
-      canvas: this.canvas,
+      renderer: this.renderer,
     } as Context;
     this.tree.setContext(context);
     document.addEventListener("visibilitychange", this.onVisibilityChange);
@@ -59,7 +60,6 @@ export class Engine<
   public async start() {
     this.init();
     this.registerAssets();
-    await this.fontsLoader.load();
     await this.assets.load();
     await this.loadAssets();
     this.ready();
@@ -88,7 +88,7 @@ export class Engine<
   private fps: number = 0;
   private lastTime = Date.now();
   private loop = (time: number) => {
-    this.canvas.clearScreen();
+    this.renderer.clearScreen();
     this.tree.update(time);
     this.tree.draw();
     this.updateFPS();
@@ -104,7 +104,7 @@ export class Engine<
       this.counter = 0;
       this.lastTime = currentTime;
     }
-    this.canvas.drawFPS(this.fps);
+    this.renderer.drawFPS(this.fps);
     this.counter++;
   }
 

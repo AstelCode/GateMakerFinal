@@ -36,7 +36,19 @@ export class Connector extends Entity {
   }
 
   draw(): void {
-    const canvas = this.context.canvas;
+    const r = this.context.renderer;
+    r.save();
+    r.transform(this.transform);
+    r.fill(this.color);
+    r.fillRect(
+      -CONECTOR_SIZE / 2,
+      -CONECTOR_SIZE / 2,
+      CONECTOR_SIZE,
+      CONECTOR_SIZE,
+      GRID_DOT_RADIUS,
+    );
+    r.restore();
+    /*     const canvas = this.context.renderer;
     const ctx = canvas.ctx;
     ctx.save();
     ctx.beginPath();
@@ -50,6 +62,6 @@ export class Connector extends Entity {
       GRID_DOT_RADIUS,
     );
     ctx.fill();
-    ctx.restore();
+    ctx.restore(); */
   }
 }

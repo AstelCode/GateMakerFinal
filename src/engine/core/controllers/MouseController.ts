@@ -43,31 +43,14 @@ export class MouseController {
     this._canvas.addEventListener("mouseup", this.onMouseUp);
     this._canvas.addEventListener("dblclick", this.onDblClick);
     this._canvas.addEventListener("wheel", this.onWheel);
-    // this._canvas.addEventListener("drag", this.onDrag);
+    window.addEventListener("wheel", this.onWheelBlock, { passive: false });
   }
 
-  /*   private onDragStart = (e: MouseEvent) => {
-    this._x = e.clientX;
-    this._y = e.clientY;
-    this._dx = 0;
-    this._dy = 0;
-    //this.handlers.dragStart.forEach(handler => handler({x: this._x, y: this._y, delta: this._delta}));
-  }; */
-
-  /* private onDrag = (e: MouseEvent) => {
-    this._x = e.clientX;
-    this._y = e.clientY;
-    this._dx = e.movementX;
-    this._dy = e.movementY;
-    this.executeHandlers("drag");
-  }; */
-
-  /*   private onDragEnd = (e: MouseEvent) => {
-    this._x = e.clientX;
-    this._y = e.clientY;
-    //  this.handlers.dragEnd.forEach(handler => handler({x: this._x, y: this._y, delta: this._delta}));
+  private onWheelBlock = (e: MouseEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+    }
   };
- */
 
   private onMouseDown = (e: MouseEvent) => {
     this._x = e.clientX;
@@ -118,7 +101,7 @@ export class MouseController {
         delta: this._delta,
         dx: this._dx,
         dy: this._dy,
-      }),
+      })
     );
   }
 
@@ -137,6 +120,7 @@ export class MouseController {
     this._canvas.removeEventListener("mouseup", this.onMouseUp);
     this._canvas.removeEventListener("dblclick", this.onDblClick);
     this._canvas.removeEventListener("wheel", this.onWheel);
+    window.removeEventListener("wheel", this.onWheelBlock);
     this.handlers = {
       down: [],
       move: [],

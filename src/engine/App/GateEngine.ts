@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { Engine, EngineContext, Entity, V2 } from "../core";
-import { CELL_SIZE, FONTS } from "./constants";
+import { Engine, EngineContext } from "../core";
+import { IFontData } from "../core/assetManager";
+import { FONTS } from "./constants";
 import { Grid } from "./entities/Grid";
 import { NodeBase } from "./entities/NodeBase";
 
@@ -14,7 +15,7 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
   }
 
   protected registerAssets(): void {
-    this.fontsLoader.registerFonts(FONTS);
+    this.assets.register<IFontData>("font", "default", FONTS);
   }
 
   protected ready(): void {
