@@ -31,32 +31,30 @@ export class GridView extends EntityView<IGridLogic> {
             CELL_SIZE / 2 - size / 2,
             size,
             size,
-            radius
+            radius,
           );
           ctx.fill();
         },
       },
       (data) => {
         this.texture = data as HTMLImageElement;
-      }
+      },
     );
     await this._context.assets.load();
   }
 
   render(): void {
+    const r = this._context.renderer;
+    r.fillStyle("yellow");
+    r.circle(0, 0, 5);
+  }
+
+  renderAbsolute(): void {
     const { transform } = this.logic;
     const r = this._context.renderer;
     r.applyPattern("GRID", this.texture, "repeat", {
       transform: transform,
     });
     r.fillRect(0, 0, r.width, r.height);
-    r.save();
-    r.transform(transform);
-    r.fill("yellow");
-    r.drawCircle(0, 0, 5);
-  }
-
-  afterDrawChilds(): void {
-    this._context.renderer.restore();
   }
 }

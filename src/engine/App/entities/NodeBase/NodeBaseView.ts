@@ -1,5 +1,6 @@
 import { EntityView, ITextureData } from "@/engine/core";
 import { INodeBaseLogic } from "./INodeBaseLogic";
+import { CELL_SIZE } from "../../constants";
 
 export class NodeBaseView extends EntityView<INodeBaseLogic> {
   private texture!: HTMLImageElement;
@@ -35,19 +36,31 @@ export class NodeBaseView extends EntityView<INodeBaseLogic> {
       },
       (texture) => {
         this.texture = texture;
-      }
+      },
     );
     await this._context.assets.load();
   }
+
   render(): void {
-    const { transform, width, height } = this.logic;
+    const { width, height, isDragging } = this.logic;
     const r = this._context.renderer;
-    r.save();
-    r.transform(transform);
-    r.drawImageCenter(this.texture, width, height);
+    // if (isDragging) return;
+    r.imageCenter(this.texture, width, height);
   }
 
-  afterDrawChilds(): void {
-    this._context.renderer.restore();
+  renderAbsolute(): void {
+    const { width, height, isDragging, newPosition: v } = this.logic;
+    if (!isDragging) return;
+    const r = this._context.renderer;
+    //r.save();
+    //r.transform()
+    //r.imageCenter(this.texture, width, height);
+    r.save();
+    r.fillStyle("rgba(131, 131, 131, 0.2)");
+    r.strokeStyle("rgba(207, 207, 207, 0.5)", 4);
+    r.rect(v.x - width / 2, v.y - height / 2, width, height, 12);
+    r.fill();
+    r.stroke();
+    r.restore();
   }
 }

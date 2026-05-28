@@ -46,4 +46,5 @@ export abstract class EntityView<T> {
 
   render() {}
   afterDrawChilds() {}
+  renderAbsolute() {}
 }

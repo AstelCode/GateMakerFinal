@@ -17,11 +17,13 @@ export abstract class Entity {
   public transform: Transform;
 
   protected children: Entity[];
-  private parent?: Entity;
+  protected parent?: Entity;
 
   protected _context!: EngineContext<any>;
 
   protected view!: EntityView<any>;
+
+  public dragable: boolean;
 
   constructor() {
     this.id = uuid();
@@ -29,6 +31,7 @@ export abstract class Entity {
     this.bounds = new AABB(this.transform.position);
     this.children = [];
     this.type = "";
+    this.dragable = true;
   }
 
   get layer() {
@@ -49,7 +52,7 @@ export abstract class Entity {
   }
 
   async addChild(child: Entity) {
-    child.parent = child;
+    child.parent = this;
     child.context = this.context;
     this.children.push(child);
     this.sortChildsLayers();
@@ -70,7 +73,7 @@ export abstract class Entity {
   updateLayout() {
     if (this.children.length == 0) return;
     this.bounds.combineMultipleRelative(
-      this.children.map((item) => item.getAABB())
+      this.children.map((item) => item.getAABB()),
     );
   }
 
@@ -81,14 +84,19 @@ export abstract class Entity {
   }
 
   _render() {
+    const r = this._context.renderer;
+    this.view.renderAbsolute();
+    r.save();
+    r.transform(this.transform);
     this.view.render();
     this.children.forEach((item) => item._render());
     this.view.afterDrawChilds();
+    r.restore();
   }
 
   sortChildsLayers() {
     this.children = this.children.sort((a, b) =>
-      a.view.layer > b.view.layer ? 1 : 0
+      a.view.layer > b.view.layer ? 1 : 0,
     );
   }
 
@@ -105,6 +113,16 @@ export abstract class Entity {
         return entity;
       }
     }
+  }
+
+  getTransformPath() {
+    const path: Transform[] = [];
+    let parent = this.parent;
+    while (parent != undefined) {
+      path.unshift(parent.transform);
+      parent = parent.parent;
+    }
+    return path;
   }
 
   emit(event: string, ...data: any) {

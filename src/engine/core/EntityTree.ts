@@ -57,14 +57,14 @@ export class EntityTree {
 
   removeEntity(entity: Entity) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id
+      (item) => item.id != entity.id,
     );
     this._entities = this._entities.filter((item) => item.id != entity.id);
   }
 
   changeLayer(entity: Entity, newLayer: number) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id
+      (item) => item.id != entity.id,
     );
     entity.layer = newLayer;
     if (this._layers.length < entity.layer) {

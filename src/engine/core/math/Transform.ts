@@ -41,9 +41,9 @@ export class Transform {
     this.updateMatriz();
   }
 
-  mulVInv(v: V2) {
-    v.x = v.x / this.scale - this.position.x;
-    v.y = v.y / this.scale - this.position.y;
+  mulVInv(v: V2, z: number = 1) {
+    v.x = v.x / this.scale - z * this.position.x;
+    v.y = v.y / this.scale - z * this.position.y;
     return v;
   }
 

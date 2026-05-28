@@ -169,4 +169,18 @@ export class V2 {
   toArray(): [number, number] {
     return [this._x, this._y];
   }
+
+  snapToGrid(cellSize: number) {
+    this.x = Math.round(this.x / cellSize) * cellSize;
+    this.y = Math.round(this.y / cellSize) * cellSize;
+    return this;
+  }
+
+  snapToGridSmooth(cellSize: number, easing: number = 0.2) {
+    const snappedX = Math.round(this.x / cellSize) * cellSize;
+    const snappedY = Math.round(this.y / cellSize) * cellSize;
+    this.x += (snappedX - this.x) * easing;
+    this.y += (snappedY - this.y) * easing;
+    return this;
+  }
 }

@@ -1,16 +1,8 @@
 import { Transform } from "../math/Transform";
-import { IRenderer } from "./IRenderer";
+import { Font, IRenderer } from "./IRenderer";
 
 interface Options {
   autoResize: boolean;
-}
-
-interface FillStyle {
-  pattern?: string;
-  transform?: Transform;
-}
-interface RenderStyle {
-  fill?: FillStyle;
 }
 
 export class CanvasRenderer implements IRenderer {
@@ -72,6 +64,11 @@ export class CanvasRenderer implements IRenderer {
     });
   }
 
+  strokeStyle(color: string, lineWidth?: number): void {
+    this.ctx.strokeStyle = color;
+    if (lineWidth) this.ctx.lineWidth = lineWidth;
+  }
+
   isRenderer(value: "2d" | "webgl"): boolean {
     return value == "2d";
   }
@@ -91,11 +88,31 @@ export class CanvasRenderer implements IRenderer {
     this.ctx.fillText(`FPS : ${fps}`, 0, 0);
     this.ctx.restore();
   }
-  fillTextCenter(text: string, x: number, y: number, font?: string): void {
+  fillTextCenter(text: string, x: number, y: number, font?: Font): void {
     this.ctx.save();
-    if (font) this.ctx.font = font;
+    if (font) this.ctx.font = `${font.size}px ${font.name}`;
     this.ctx.textBaseline = "middle";
     this.ctx.textAlign = "center";
+    this.ctx.fillText(text, x, y);
+    this.ctx.restore();
+  }
+
+  fillText(
+    text: string,
+    x: number,
+    y: number,
+    font?: Font,
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
+  ): void {
+    this.ctx.save();
+    if (font) this.ctx.font = `${font.size}px ${font.name}`;
+
+    this.ctx.textBaseline =
+      (direction?.split(":")[0] as "top" | "bottom" | "middle") ?? "center";
+
+    this.ctx.textAlign =
+      (direction?.split(":")[1] as "end" | "center" | "start") ?? "center";
+
     this.ctx.fillText(text, x, y);
     this.ctx.restore();
   }
@@ -105,15 +122,24 @@ export class CanvasRenderer implements IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number
+    radius?: number,
   ) {
     if (radius) {
       this.ctx.beginPath();
       this.ctx.roundRect(x, y, width, height, radius);
       this.ctx.fill();
     } else {
+      this.ctx.fillRect(x, y, width, height);
     }
-    this.ctx.fillRect(x, y, width, height);
+  }
+
+  rect(x: number, y: number, width: number, height: number, radius?: number) {
+    if (radius) {
+      this.ctx.beginPath();
+      this.ctx.roundRect(x, y, width, height, radius);
+    } else {
+      this.ctx.fillRect(x, y, width, height);
+    }
   }
 
   fillRectCenter(width: number, height: number, radius?: number) {
@@ -122,25 +148,29 @@ export class CanvasRenderer implements IRenderer {
       this.ctx.roundRect(-width / 2, -height / 2, width, height, radius);
       this.ctx.fill();
     } else {
+      this.ctx.fillRect(-width / 2, -height / 2, width, height);
     }
-    this.ctx.fillRect(-width / 2, -height / 2, width, height);
   }
 
-  drawCircle(x: number, y: number, radius: number): void {
+  circle(x: number, y: number, radius: number): void {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, Math.PI * 2);
     this.ctx.fill();
   }
 
-  fill(name: string): void {
+  fillStyle(name: string): void {
     this.ctx.fillStyle = name;
   }
 
-  drawImageCenter(
-    texture: HTMLImageElement,
-    width: number,
-    height: number
-  ): void {
+  fill() {
+    this.ctx.fill();
+  }
+
+  stroke(): void {
+    this.ctx.stroke();
+  }
+
+  imageCenter(texture: HTMLImageElement, width: number, height: number): void {
     if (!texture) return;
     this.ctx.drawImage(texture, -width / 2, -height / 2, width, height);
   }
@@ -153,7 +183,7 @@ export class CanvasRenderer implements IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform }
+    props?: { transform?: Transform },
   ): void {
     if (!texture || !texture.complete) return;
     if (this._patterns.has(name)) {

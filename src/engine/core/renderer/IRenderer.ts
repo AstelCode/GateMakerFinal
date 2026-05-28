@@ -1,5 +1,10 @@
 import { Transform } from "../math/Transform";
 
+export interface Font {
+  size: number;
+  name: string;
+}
+
 export interface IRenderer {
   get canvas(): HTMLCanvasElement;
   get width(): number;
@@ -15,14 +20,10 @@ export interface IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform }
+    props?: { transform?: Transform },
   ): void;
 
-  drawImageCenter(
-    texture: HTMLImageElement,
-    width: number,
-    height: number
-  ): void;
+  imageCenter(texture: HTMLImageElement, width: number, height: number): void;
 
   transform(transform: Transform): void;
 
@@ -31,17 +32,36 @@ export interface IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number
+    radius?: number,
+  ): void;
+
+  rect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius?: number,
   ): void;
 
   fillRectCenter(width: number, height: number, radius?: number): void;
 
-  drawCircle(x: number, y: number, radius: number): void;
+  circle(x: number, y: number, radius: number): void;
 
-  fill(name: string): void;
+  fillStyle(color: string): void;
+  strokeStyle(color: string, lineWidth?: number): void;
 
   save(): void;
   restore(): void;
 
-  fillTextCenter(text: string, x: number, y: number, font?: string): void;
+  fillTextCenter(text: string, x: number, y: number, font: Font): void;
+  fillText(
+    text: string,
+    x: number,
+    y: number,
+    font?: Font,
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
+  ): void;
+
+  fill(): void;
+  stroke(): void;
 }
