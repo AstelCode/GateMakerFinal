@@ -8,3 +8,6 @@ export * from "./controllers";
 export * from "./AABB";
 export * from "./colliders";
 export * from "./timingFunctions";
+export * from "./EntityView";
+export * from "./ILogic";
+export * from "./assetManager";

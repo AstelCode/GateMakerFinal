@@ -30,6 +30,11 @@ export class AABB {
     this.bottomRelative = -height / 2;
   }
 
+  set size(value: number) {
+    this.width = value;
+    this.height = value;
+  }
+
   setPosition(position: V2) {
     this.position = position;
   }

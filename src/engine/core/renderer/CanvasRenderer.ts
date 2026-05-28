@@ -33,7 +33,6 @@ export class CanvasRenderer implements IRenderer {
     this._patterns = new Map();
 
     if (options?.autoResize) window.addEventListener("resize", this.onResize);
-    /*     CanvasHandler.initCanvasRing(canvas); */
   }
 
   get width() {
@@ -73,6 +72,10 @@ export class CanvasRenderer implements IRenderer {
     });
   }
 
+  isRenderer(value: "2d" | "webgl"): boolean {
+    return value == "2d";
+  }
+
   clearScreen() {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
@@ -88,13 +91,21 @@ export class CanvasRenderer implements IRenderer {
     this.ctx.fillText(`FPS : ${fps}`, 0, 0);
     this.ctx.restore();
   }
+  fillTextCenter(text: string, x: number, y: number, font?: string): void {
+    this.ctx.save();
+    if (font) this.ctx.font = font;
+    this.ctx.textBaseline = "middle";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(text, x, y);
+    this.ctx.restore();
+  }
 
   fillRect(
     x: number,
     y: number,
     width: number,
     height: number,
-    radius?: number,
+    radius?: number
   ) {
     if (radius) {
       this.ctx.beginPath();
@@ -103,6 +114,16 @@ export class CanvasRenderer implements IRenderer {
     } else {
     }
     this.ctx.fillRect(x, y, width, height);
+  }
+
+  fillRectCenter(width: number, height: number, radius?: number) {
+    if (radius) {
+      this.ctx.beginPath();
+      this.ctx.roundRect(-width / 2, -height / 2, width, height, radius);
+      this.ctx.fill();
+    } else {
+    }
+    this.ctx.fillRect(-width / 2, -height / 2, width, height);
   }
 
   drawCircle(x: number, y: number, radius: number): void {
@@ -118,7 +139,7 @@ export class CanvasRenderer implements IRenderer {
   drawImageCenter(
     texture: HTMLImageElement,
     width: number,
-    height: number,
+    height: number
   ): void {
     if (!texture) return;
     this.ctx.drawImage(texture, -width / 2, -height / 2, width, height);
@@ -132,16 +153,28 @@ export class CanvasRenderer implements IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform },
+    props?: { transform?: Transform }
   ): void {
-    if (!texture) return;
+    if (!texture || !texture.complete) return;
     if (this._patterns.has(name)) {
-      if (props?.transform)
-        this._patterns.get(name)?.setTransform(props.transform!.toDOMMatriz());
-      this.ctx.fillStyle = this._patterns.get(name)!;
+      const pattern = this._patterns.get(name)!;
+
+      if (props?.transform) {
+        pattern.setTransform(props.transform.toDOMMatriz());
+      }
+
+      this.ctx.fillStyle = pattern;
       return;
     }
-    const pattern = this.ctx.createPattern(texture, repetition)!;
+
+    const pattern = this.ctx.createPattern(texture, repetition);
+
+    if (!pattern) return;
+
+    if (props?.transform) {
+      pattern.setTransform(props.transform.toDOMMatriz());
+    }
+
     this._patterns.set(name, pattern);
     this.ctx.fillStyle = pattern;
   }

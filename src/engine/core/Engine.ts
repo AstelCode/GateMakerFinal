@@ -20,7 +20,7 @@ export interface EngineContext<T extends Record<string, any>> {
 
 export class Engine<
   T extends Record<string, any>,
-  Context extends EngineContext<T>,
+  Context extends EngineContext<T>
 > {
   protected mouse: MouseController;
   protected keyboard: KeyboardController;
@@ -90,7 +90,7 @@ export class Engine<
   private loop = (time: number) => {
     this.renderer.clearScreen();
     this.tree.update(time);
-    this.tree.draw();
+    this.tree.render();
     this.updateFPS();
     if (this.running) {
       this.requestAnimationFrameId = window.requestAnimationFrame(this.loop);

@@ -6,56 +6,71 @@ import { AABB } from "./AABB/AABB";
 import { V2 } from "./math/Vector";
 import { EngineContext } from "./Engine";
 import { Transform } from "./math/Transform";
+import { EntityView } from "./EntityView";
 
-export class Entity {
+export abstract class Entity {
   public readonly id: string;
+  public type: string;
+
   public collider?: Collider;
-  public aabb: AABB;
-  /*  public position: V2; */
-  public layer: number;
+  public bounds: AABB;
   public transform: Transform;
-  protected context!: EngineContext<any>;
+
   protected children: Entity[];
   private parent?: Entity;
-  public type: string;
+
+  protected _context!: EngineContext<any>;
+
+  protected view!: EntityView<any>;
 
   constructor() {
     this.id = uuid();
     this.transform = new Transform();
-    this.aabb = new AABB(this.transform.position);
-    this.layer = 0;
+    this.bounds = new AABB(this.transform.position);
     this.children = [];
     this.type = "";
   }
 
-  setContext(context: EngineContext<any>) {
-    this.context = context;
+  get layer() {
+    return this.view.layer;
   }
 
-  addChild(child: Entity) {
+  set layer(value: number) {
+    this.view.layer = value;
+  }
+
+  set context(context: EngineContext<any>) {
+    this.view.context = context;
+    this._context = context;
+  }
+
+  get context() {
+    return this._context;
+  }
+
+  async addChild(child: Entity) {
     child.parent = child;
+    child.context = this.context;
     this.children.push(child);
     this.sortChildsLayers();
+    await child._ready();
   }
 
   async _ready() {
-    await this.loadAssets();
+    await this.view.loadAssets();
     this.ready();
   }
 
-  async loadAssets() {}
   ready() {}
   update(time: number) {}
   afterUpdateChilds(time: number) {}
-  draw() {}
-  afterDrawChilds() {}
 
   adjustPosition() {}
 
   updateLayout() {
     if (this.children.length == 0) return;
-    this.aabb.combineMultipleRelative(
-      this.children.map((item) => item.getAABB()),
+    this.bounds.combineMultipleRelative(
+      this.children.map((item) => item.getAABB())
     );
   }
 
@@ -65,26 +80,27 @@ export class Entity {
     this.afterUpdateChilds(time);
   }
 
-  _draw() {
-    const ctx = this.context.renderer.ctx;
-    this.draw();
-    this.children.forEach((item) => item._draw());
-    this.afterDrawChilds();
+  _render() {
+    this.view.render();
+    this.children.forEach((item) => item._render());
+    this.view.afterDrawChilds();
   }
 
   sortChildsLayers() {
-    this.children = this.children.sort((a, b) => (a.layer > b.layer ? 1 : 0));
+    this.children = this.children.sort((a, b) =>
+      a.view.layer > b.view.layer ? 1 : 0
+    );
   }
 
   getAABB() {
-    return this.collider ? this.collider.getAABB() : this.aabb;
+    return this.collider ? this.collider.getAABB() : this.bounds;
   }
 
   pointCollition(v: V2): undefined | Entity {
     this.transform.mulVInv(v);
     for (let i = this.children.length - 1; i >= 0; i--) {
       let entity = this.children[i];
-      if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
+      if (entity.bounds.pointInside(v) || entity.collider?.pointInside(v)) {
         entity = entity.pointCollition(v) ?? entity;
         return entity;
       }

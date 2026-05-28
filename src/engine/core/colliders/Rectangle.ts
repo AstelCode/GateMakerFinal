@@ -31,6 +31,12 @@ export class RectangleCollider extends Collider {
     this.updateAABB();
   }
 
+  set size(value: number) {
+    this._width = value;
+    this._height = value;
+    this.updateAABB();
+  }
+
   public pointInside(v: V2): boolean {
     return this.aabb.pointInside(v);
   }

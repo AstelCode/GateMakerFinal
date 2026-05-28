@@ -44,27 +44,27 @@ export class EntityTree {
     }
     this._layers[entity.layer].push(entity);
     this._entities.push(entity);
-    entity.setContext(this._context);
+    entity.context = this._context;
     await entity._ready();
   }
 
   async setChild(entity: Entity, child: Entity) {
     if (entity.id == child.id) return;
     entity.addChild(child);
-    child.setContext(this._context);
+    child.context = this._context;
     await child._ready();
   }
 
   removeEntity(entity: Entity) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id,
+      (item) => item.id != entity.id
     );
     this._entities = this._entities.filter((item) => item.id != entity.id);
   }
 
   changeLayer(entity: Entity, newLayer: number) {
     this._layers[entity.layer] = this._layers[entity.layer].filter(
-      (item) => item.id != entity.id,
+      (item) => item.id != entity.id
     );
     entity.layer = newLayer;
     if (this._layers.length < entity.layer) {
@@ -75,11 +75,11 @@ export class EntityTree {
     this._layers[entity.layer].push(entity);
   }
 
-  draw() {
+  render() {
     const layers = this.layers;
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
-        layers[i][j]._draw();
+        layers[i][j]._render();
       }
     }
   }
@@ -90,7 +90,7 @@ export class EntityTree {
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
         let entity = layers[i][j];
-        if (entity.aabb.pointInside(v) || entity.collider?.pointInside(v)) {
+        if (entity.bounds.pointInside(v) || entity.collider?.pointInside(v)) {
           entity = entity.pointCollition(v) ?? entity;
           return { entity, v: v };
         }

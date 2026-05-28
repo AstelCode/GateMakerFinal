@@ -1,1 +1,2 @@
-export { V2 } from "./Vector";
+export * from "./Vector";
+export * from "./Transform";

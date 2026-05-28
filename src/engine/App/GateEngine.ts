@@ -2,8 +2,8 @@
 import { Engine, EngineContext } from "../core";
 import { IFontData } from "../core/assetManager";
 import { FONTS } from "./constants";
-import { Grid } from "./entities/Grid";
-import { NodeBase } from "./entities/NodeBase";
+import { Grid } from "./entities/grid/Grid";
+import { NodeBase } from "./entities/NodeBase/NodeBase";
 
 interface GateEngineEvents {}
 
@@ -21,11 +21,13 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
   protected ready(): void {
     const grid = new Grid();
     this.tree.addEntity(grid);
-    this.tree.setChild(grid, new NodeBase(10, 3));
+    grid.addChild(new NodeBase(10, 3));
+    /* this.tree.setChild(grid, new NodeBase(10, 3)); */
     const node = new NodeBase(10, 3);
     node.transform.position.y += 400;
     node.transform.updateMatriz();
-    this.tree.setChild(grid, node);
+    grid.addChild(node);
+    //this.tree.setChild(grid, node);
     this.initEvents();
   }
 
