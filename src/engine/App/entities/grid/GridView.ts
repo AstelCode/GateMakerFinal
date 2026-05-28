@@ -37,7 +37,6 @@ export class GridView extends EntityView<IGridLogic> {
         },
       },
       (data) => {
-        console.log(data);
         this.texture = data as HTMLImageElement;
       }
     );

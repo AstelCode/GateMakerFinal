@@ -1,11 +1,10 @@
 import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
 import { CELL_SIZE } from "../../constants";
 import { Connector } from "../connector/Connector";
-import { ITextureData } from "@/engine/core/assetManager";
 import { INodeBaseLogic } from "./INodeBaseLogic";
 import { NodeBaseView } from "./NodeBaseView";
 
-enum Direction {
+export enum Direction {
   TOP = 0,
   LEFT = 1,
   BOTTOM = 2,
@@ -45,7 +44,7 @@ export class NodeBase extends Entity implements INodeBaseLogic {
   }
 
   ready(): void {
-    this.contectors.push({ name: "A", direction: Direction.LEFT, idx: 1 });
+    this.contectors.push({ name: "A", direction: Direction.RIGHT, idx: 1 });
     this.contectors.push({ name: "B", direction: Direction.LEFT, idx: 2 });
 
     this.generateConnectors();
@@ -55,14 +54,18 @@ export class NodeBase extends Entity implements INodeBaseLogic {
   private generateConnectors() {
     for (const con of this.contectors) {
       const x =
-        con.direction == Direction.BOTTOM ? this.width / 2 : -this.width / 2;
+        con.direction == Direction.RIGHT ? this.width / 2 : -this.width / 2;
       const y =
-        con.direction == Direction.RIGHT ? this.height / 2 : -this.height / 2;
+        con.direction == Direction.BOTTOM ? this.height / 2 : -this.height / 2;
       const off = CELL_SIZE * con.idx;
       if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
-        this.addChild(new Connector(con.name, new V2(x + off, y)));
+        this.addChild(
+          new Connector(con.name, con.direction, new V2(x + off, y))
+        );
       } else {
-        this.addChild(new Connector(con.name, new V2(x, y + off)));
+        this.addChild(
+          new Connector(con.name, con.direction, new V2(x, y + off))
+        );
       }
     }
   }
@@ -73,10 +76,16 @@ export class NodeBase extends Entity implements INodeBaseLogic {
 
   on_down(e: V2) {
     const v = this.transform.mulVInv(e.clone());
+    let con: Connector | undefined = undefined;
     for (const node of this.children) {
       if (node.collider?.pointInside(v)) {
-        console.log((node as Connector).name);
+        con = node as Connector;
       }
+    }
+    if (con == undefined) {
+      console.log("node");
+    } else {
+      console.log(con.name);
     }
   }
 

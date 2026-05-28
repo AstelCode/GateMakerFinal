@@ -6,11 +6,12 @@ import {
 } from "../../constants";
 import { ConnectorView } from "./ConnectorView";
 import { IConnectorLogic } from "./IConnectorLogic";
+import { Direction } from "../NodeBase/NodeBase";
 
 export class Connector extends Entity implements IConnectorLogic {
   public collider: RectangleCollider;
   protected view: ConnectorView;
-  constructor(public name: string, position: V2) {
+  constructor(public name: string, public direction: Direction, position: V2) {
     super();
     this.collider = new RectangleCollider();
     this.collider.setPosition(this.transform.position);
