@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
-import { CELL_SIZE } from "../../constants";
+import { CELL_SIZE, CONECTOR_SIZE } from "../../constants";
 import { Connector } from "../connector/Connector";
 import { INodeBaseLogic } from "./INodeBaseLogic";
 import { NodeBaseView } from "./NodeBaseView";
@@ -76,11 +76,11 @@ export class NodeBase extends Entity implements INodeBaseLogic {
 
       if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x + off, y)),
+          new Connector(con.name, con.direction, new V2(x + off, y))
         );
       } else {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x, y + off)),
+          new Connector(con.name, con.direction, new V2(x, y + off))
         );
       }
     }
@@ -101,7 +101,7 @@ export class NodeBase extends Entity implements INodeBaseLogic {
     this.newPosition.copy(this.transform.position);
     this.newPosition
       .addV(this.pivot)
-      .snapToGridSmooth(CELL_SIZE, 0.8)
+      .snapToGridSmooth(CELL_SIZE, 1)
       .subV(this.pivot);
   }
 

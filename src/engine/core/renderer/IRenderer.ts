@@ -21,19 +21,20 @@ export interface IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform },
+    props?: { transform?: Transform }
   ): void;
 
   imageCenter(texture: HTMLImageElement, width: number, height: number): void;
 
   transform(transform: Transform): void;
+  translate(x: number, y: number): void;
 
   fillRect(
     x: number,
     y: number,
     width: number,
     height: number,
-    radius?: number,
+    radius?: number
   ): void;
 
   rect(
@@ -41,7 +42,7 @@ export interface IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number,
+    radius?: number
   ): void;
 
   fillRectCenter(width: number, height: number, radius?: number): void;
@@ -60,7 +61,7 @@ export interface IRenderer {
     x: number,
     y: number,
     font?: Font,
-    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`
   ): void;
 
   fill(): void;

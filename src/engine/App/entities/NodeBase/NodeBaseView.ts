@@ -37,7 +37,7 @@ export class NodeBaseView extends EntityView<INodeBaseLogic> {
       },
       (texture) => {
         this.texture = texture;
-      },
+      }
     );
     await this._context.assets.load();
   }

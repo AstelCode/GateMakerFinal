@@ -31,14 +31,20 @@ export class GridView extends EntityView<IGridLogic> {
             CELL_SIZE / 2 - size / 2,
             size,
             size,
-            radius,
+            radius
           );
           ctx.fill();
+
+          ctx.beginPath();
+          ctx.rect(0, 0, CELL_SIZE, CELL_SIZE);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = "red";
+          ctx.stroke();
         },
       },
       (data) => {
         this.texture = data as HTMLImageElement;
-      },
+      }
     );
     await this._context.assets.load();
   }
@@ -52,9 +58,12 @@ export class GridView extends EntityView<IGridLogic> {
   renderAbsolute(): void {
     const { transform } = this.logic;
     const r = this._context.renderer;
+    r.save();
+
     r.applyPattern("GRID", this.texture, "repeat", {
       transform: transform,
     });
     r.fillRect(0, 0, r.width, r.height);
+    r.restore();
   }
 }

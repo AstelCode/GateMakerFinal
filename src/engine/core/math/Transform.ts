@@ -33,12 +33,14 @@ export class Transform {
     this.position.y = y / newScale - y / this.scale + this.position.y;
     this.scale = newScale;
     this.updateMatriz();
+    return this;
   }
 
   translate(v: { x: number; y: number }) {
     this.position.x += v.x / this.scale;
     this.position.y += v.y / this.scale;
     this.updateMatriz();
+    return this;
   }
 
   mulVInv(v: V2, z: number = 1) {
@@ -69,7 +71,15 @@ export class Transform {
       this.domMatriz.c,
       this.domMatriz.d,
       this.domMatriz.e,
-      this.domMatriz.f,
+      this.domMatriz.f
     );
+  }
+  clone() {
+    const transform = new Transform();
+    transform.position = this.position.clone();
+    transform.scale = this.scale;
+    transform.rotation = this.rotation;
+    transform.updateMatriz();
+    return transform;
   }
 }

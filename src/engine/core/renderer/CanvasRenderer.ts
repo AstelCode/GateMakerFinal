@@ -103,7 +103,7 @@ export class CanvasRenderer implements IRenderer {
     x: number,
     y: number,
     font?: Font,
-    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`
   ): void {
     this.ctx.save();
     if (font) this.ctx.font = `${font.size}px ${font.name}`;
@@ -123,7 +123,7 @@ export class CanvasRenderer implements IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number,
+    radius?: number
   ) {
     if (radius) {
       this.ctx.beginPath();
@@ -180,11 +180,15 @@ export class CanvasRenderer implements IRenderer {
     transform.applyToCanvas(this.ctx);
   }
 
+  translate(x: number, y: number): void {
+    this.ctx.translate(x, y);
+  }
+
   applyPattern(
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform },
+    props?: { transform?: Transform }
   ): void {
     if (!texture || !texture.complete) return;
     if (this._patterns.has(name)) {
@@ -251,7 +255,7 @@ export class CanvasRenderer implements IRenderer {
         b.y,
         x2,
         y2,
-        Math.min(radius, distAB / 2, distBC / 2),
+        Math.min(radius, distAB / 2, distBC / 2)
       );
     }
 

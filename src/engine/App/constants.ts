@@ -1,7 +1,7 @@
 import { createCubicBezier } from "../core";
 
 export const CELL_SIZE = 50;
-export const MAX_ZOOM = 1.5;
+export const MAX_ZOOM = 2;
 export const MIN_ZOOM = 0.3;
 export const START_T = 0.15;
 export const smoothZoom = createCubicBezier(0.45, 0.91, 0.49, 0.98);
