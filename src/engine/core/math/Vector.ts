@@ -50,6 +50,12 @@ export class V2 {
     return this;
   }
 
+  set(x: number, y: number) {
+    this._x = x;
+    this._y = y;
+    return this;
+  }
+
   clone(): V2 {
     return new V2(this._x, this._y);
   }

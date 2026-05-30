@@ -1,3 +1,4 @@
+import { V2 } from "../math";
 import { Transform } from "../math/Transform";
 
 export interface Font {
@@ -64,4 +65,6 @@ export interface IRenderer {
 
   fill(): void;
   stroke(): void;
+
+  drawPath(path: V2[], thicknest: number, radius?: number): void;
 }

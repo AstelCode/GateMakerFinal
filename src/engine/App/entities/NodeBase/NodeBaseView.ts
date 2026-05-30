@@ -4,6 +4,7 @@ import { CELL_SIZE } from "../../constants";
 
 export class NodeBaseView extends EntityView<INodeBaseLogic> {
   private texture!: HTMLImageElement;
+  protected _layer: number = 1;
   async loadAssets(): Promise<void> {
     const { width: w, height: h } = this.logic;
 

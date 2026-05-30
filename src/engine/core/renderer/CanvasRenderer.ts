@@ -1,3 +1,4 @@
+import { V2 } from "../math";
 import { Transform } from "../math/Transform";
 import { Font, IRenderer } from "./IRenderer";
 
@@ -211,6 +212,65 @@ export class CanvasRenderer implements IRenderer {
 
   save() {
     this.ctx.save();
+  }
+
+  private drawRoundedPath(path: V2[], radius: number) {
+    if (path.length <= 1) return;
+    this.ctx.beginPath();
+    this.ctx.moveTo(path[0].x, path[0].y);
+
+    if (path.length == 2) {
+      this.ctx.lineTo(path[1].x, path[1].y);
+      this.ctx.stroke();
+      return;
+    }
+
+    for (let i = 1; i < path.length - 1; i++) {
+      const a = path[i - 1];
+      const b = path[i];
+      const c = path[i + 1];
+
+      const distAB = Math.hypot(b.x - a.x, b.y - a.y);
+      const distBC = Math.hypot(c.x - b.x, c.y - b.y);
+
+      if (distAB === 0 || distBC === 0) {
+        this.ctx.lineTo(b.x, b.y);
+        continue;
+      }
+
+      const t1 = radius / distAB;
+      const t2 = radius / distBC;
+      const x1 = b.x + (a.x - b.x) * t1;
+      const y1 = b.y + (a.y - b.y) * t1;
+      const x2 = b.x + (c.x - b.x) * t2;
+      const y2 = b.y + (c.y - b.y) * t2;
+
+      this.ctx.lineTo(x1, y1);
+      this.ctx.arcTo(
+        b.x,
+        b.y,
+        x2,
+        y2,
+        Math.min(radius, distAB / 2, distBC / 2),
+      );
+    }
+
+    this.ctx.lineTo(path[path.length - 1].x, path[path.length - 1].y);
+    this.ctx.stroke();
+  }
+
+  drawPath(path: V2[], thicknest: number, radius: number = 10) {
+    if (path.length <= 1) return;
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
+    this.ctx.lineWidth = thicknest;
+
+    this.drawRoundedPath(path, radius);
+
+    const innerRadius = Math.max(0, radius - thicknest);
+    if (innerRadius > 0) {
+      this.drawRoundedPath(path, innerRadius);
+    }
   }
 
   restore(): void {

@@ -95,9 +95,7 @@ export abstract class Entity {
   }
 
   sortChildsLayers() {
-    this.children = this.children.sort((a, b) =>
-      a.view.layer > b.view.layer ? 1 : 0,
-    );
+    this.children = this.children.sort((a, b) => a.view.layer - b.view.layer);
   }
 
   getAABB() {

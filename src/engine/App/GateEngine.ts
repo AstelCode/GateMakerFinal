@@ -4,6 +4,7 @@ import { IFontData } from "../core/assetManager";
 import { FONTS_DATA } from "./constants";
 import { Grid } from "./entities/grid/Grid";
 import { NodeBase } from "./entities/NodeBase/NodeBase";
+import { Wire } from "./entities/wire/Wire";
 
 interface GateEngineEvents {}
 
@@ -26,6 +27,8 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     node.transform.position.y += 400;
     node.transform.updateMatriz();
     grid.addChild(node);
+    const wire = new Wire();
+    grid.addChild(wire);
     this.initEvents();
   }
 
@@ -38,17 +41,6 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
       const v = new V2(e.dx, e.dy);
       this.activeNode.getTransformPath().forEach((item) => item.mulVInv(v, 0));
       this.activeNode.emit("drag", e, v);
-      /*       if (this.activeNode instanceof Grid) {
-        return;
-      } */
-
-      //if(this.)
-
-      /* const v = new V2(e.dx, e.dy);
-      this.activeNode.getTransformPath().forEach((item) => item.mulVInv(v, 0));
-      this.activeNode.transform.position.addV(v);
-      this.activeNode.transform.updateMatriz(); */
-      //if()
     });
     this.mouse.on("wheel", (e) => {
       const grid = this.tree.getEntity("GRID")!;
