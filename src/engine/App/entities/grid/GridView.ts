@@ -31,20 +31,20 @@ export class GridView extends EntityView<IGridLogic> {
             CELL_SIZE / 2 - size / 2,
             size,
             size,
-            radius
+            radius,
           );
           ctx.fill();
 
-          ctx.beginPath();
+          /* ctx.beginPath();
           ctx.rect(0, 0, CELL_SIZE, CELL_SIZE);
           ctx.lineWidth = 2;
           ctx.strokeStyle = "red";
-          ctx.stroke();
+          ctx.stroke(); */
         },
       },
       (data) => {
         this.texture = data as HTMLImageElement;
-      }
+      },
     );
     await this._context.assets.load();
   }

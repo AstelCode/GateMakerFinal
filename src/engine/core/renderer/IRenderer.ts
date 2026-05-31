@@ -21,7 +21,7 @@ export interface IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform }
+    props?: { transform?: Transform },
   ): void;
 
   imageCenter(texture: HTMLImageElement, width: number, height: number): void;
@@ -34,7 +34,7 @@ export interface IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number
+    radius?: number,
   ): void;
 
   rect(
@@ -42,7 +42,7 @@ export interface IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number
+    radius?: number,
   ): void;
 
   fillRectCenter(width: number, height: number, radius?: number): void;
@@ -61,11 +61,11 @@ export interface IRenderer {
     x: number,
     y: number,
     font?: Font,
-    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
   ): void;
 
   fill(): void;
   stroke(): void;
 
-  drawPath(path: V2[], thicknest: number, radius?: number): void;
+  drawPath(path: V2[], width: number, radius?: number): void;
 }

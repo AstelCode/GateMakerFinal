@@ -103,7 +103,7 @@ export class CanvasRenderer implements IRenderer {
     x: number,
     y: number,
     font?: Font,
-    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
   ): void {
     this.ctx.save();
     if (font) this.ctx.font = `${font.size}px ${font.name}`;
@@ -123,7 +123,7 @@ export class CanvasRenderer implements IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number
+    radius?: number,
   ) {
     if (radius) {
       this.ctx.beginPath();
@@ -180,7 +180,7 @@ export class CanvasRenderer implements IRenderer {
     transform.applyToCanvas(this.ctx);
   }
 
-  translate(x: number, y: number): void {
+  translate(x: number, y: number) {
     this.ctx.translate(x, y);
   }
 
@@ -188,7 +188,7 @@ export class CanvasRenderer implements IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform }
+    props?: { transform?: Transform },
   ): void {
     if (!texture || !texture.complete) return;
     if (this._patterns.has(name)) {
@@ -218,12 +218,19 @@ export class CanvasRenderer implements IRenderer {
     this.ctx.save();
   }
 
-  private drawRoundedPath(path: V2[], radius: number) {
+  drawPath(path: V2[], width: number, radius: number = 10) {
     if (path.length <= 1) return;
+
     this.ctx.beginPath();
     this.ctx.moveTo(path[0].x, path[0].y);
+    this.ctx.lineWidth = width;
 
-    if (path.length == 2) {
+    // Opcional pero recomendado para líneas gruesas:
+    // suaviza las uniones y los extremos
+    this.ctx.lineJoin = "round";
+    this.ctx.lineCap = "round";
+
+    if (path.length === 2) {
       this.ctx.lineTo(path[1].x, path[1].y);
       this.ctx.stroke();
       return;
@@ -242,39 +249,15 @@ export class CanvasRenderer implements IRenderer {
         continue;
       }
 
-      const t1 = radius / distAB;
-      const t2 = radius / distBC;
-      const x1 = b.x + (a.x - b.x) * t1;
-      const y1 = b.y + (a.y - b.y) * t1;
-      const x2 = b.x + (c.x - b.x) * t2;
-      const y2 = b.y + (c.y - b.y) * t2;
-
-      this.ctx.lineTo(x1, y1);
-      this.ctx.arcTo(
-        b.x,
-        b.y,
-        x2,
-        y2,
-        Math.min(radius, distAB / 2, distBC / 2)
-      );
+      const radioMinimoParaCurvaInterna = width / 2 + 2;
+      const radioIdeal = Math.max(radius, radioMinimoParaCurvaInterna);
+      const effectiveRadius = Math.min(radioIdeal, distAB / 2, distBC / 2);
+      this.ctx.arcTo(b.x, b.y, c.x, c.y, effectiveRadius);
     }
 
+    // Cerrar el trazado con el último punto
     this.ctx.lineTo(path[path.length - 1].x, path[path.length - 1].y);
     this.ctx.stroke();
-  }
-
-  drawPath(path: V2[], thicknest: number, radius: number = 10) {
-    if (path.length <= 1) return;
-    this.ctx.lineCap = "round";
-    this.ctx.lineJoin = "round";
-    this.ctx.lineWidth = thicknest;
-
-    this.drawRoundedPath(path, radius);
-
-    const innerRadius = Math.max(0, radius - thicknest);
-    if (innerRadius > 0) {
-      this.drawRoundedPath(path, innerRadius);
-    }
   }
 
   restore(): void {
