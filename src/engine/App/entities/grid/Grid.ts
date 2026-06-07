@@ -21,6 +21,7 @@ export class Grid extends Entity {
     this.bounds = new AABB(this.pivot);
     this.type = "GRID";
     this.view = new GridView(this);
+    this.dragable = false;
   }
 
   private resize = () => {

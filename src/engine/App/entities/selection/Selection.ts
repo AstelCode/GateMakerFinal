@@ -12,6 +12,9 @@ export class Selection extends Entity implements ISelectionView {
     this.end = new V2();
     this.type = "SELECTION";
     this.dragable = !!entity;
+
+    this.selectable = !!entity;
+
     this.color = "#7dcfff6e";
     if (entity) {
       this.bounds = entity.bounds;

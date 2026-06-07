@@ -21,9 +21,7 @@ export class SelectionTool extends Tool {
     const { entity } = this.context.tree.pointCollition(e);
 
     return (
-      entity?.type == "GRID" ||
-      entity?.type == "NODE" ||
-      entity?.type == "SELECTION"
+      entity?.type == "GRID" || entity?.dragable || entity?.type == "SELECTION"
     );
   }
 
@@ -93,7 +91,7 @@ export class SelectionTool extends Tool {
     }
 
     if (
-      entity?.type == "NODE" &&
+      entity?.dragable &&
       !ctx.activeSelection.some((item) => item.entity?.id == entity.id)
     ) {
       this.selectEntities([entity]);
