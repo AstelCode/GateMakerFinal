@@ -34,8 +34,8 @@ export class KeyboardController {
   private onKeyDown = (e: KeyboardEvent) => {
     if (!this.keys.has(e.key)) {
       this.keys.add(e.key);
-      this.executeHandlers(`keydown:${e.key}`, e.key, true);
       this.executeHandlers(`keydown`, e.key, true);
+      this.executeHandlers(`keydown:${e.key}`, e.key, true);
     }
     this.executeShortcuts();
   };
@@ -43,8 +43,8 @@ export class KeyboardController {
   private onKeyUp = (e: KeyboardEvent) => {
     if (this.keys.has(e.key)) {
       this.keys.delete(e.key);
-      this.executeHandlers(`keyup:${e.key}`, e.key, false);
       this.executeHandlers(`keyup`, e.key, true);
+      this.executeHandlers(`keyup:${e.key}`, e.key, false);
     }
   };
 

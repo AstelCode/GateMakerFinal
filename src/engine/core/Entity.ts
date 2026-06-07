@@ -16,7 +16,7 @@ export abstract class Entity {
   public bounds: AABB;
   public transform: Transform;
 
-  protected children: Entity[];
+  protected _children: Entity[];
   protected parent?: Entity;
 
   protected _context!: EngineContext<any>;
@@ -26,16 +26,18 @@ export abstract class Entity {
   public dragable: boolean;
   public visible: boolean;
   public childrenVisible: boolean;
+  public selectable: boolean;
 
   constructor() {
     this.id = uuid();
     this.transform = new Transform();
     this.bounds = new AABB(this.transform.position);
-    this.children = [];
+    this._children = [];
     this.type = "";
     this.dragable = true;
     this.childrenVisible = true;
     this.visible = true;
+    this.selectable = true;
   }
 
   get layer() {
@@ -55,10 +57,14 @@ export abstract class Entity {
     return this._context;
   }
 
+  get children() {
+    return this._children;
+  }
+
   async addChild(child: Entity) {
     child.parent = this;
     child.context = this.context;
-    this.children.push(child);
+    this._children.push(child);
     this.sortChildsLayers();
     await child._ready();
   }
@@ -76,21 +82,28 @@ export abstract class Entity {
   adjustPosition() {}
 
   updateLayout() {
-    if (this.children.length == 0) return;
+    if (this._children.length == 0) return;
     this.bounds.combineMultipleRelative(
-      this.children.map((item) => item.getAABB()),
+      this._children.map((item) => item.getAABB()),
     );
+  }
+
+  removeChild(child: Entity) {
+    this._children = this._children.filter((item) => item != child);
   }
 
   _update(time: number) {
     this.update(time);
-    this.children.forEach((item) => item._update(time));
+    this._children.forEach((item) => item._update(time));
     this.afterUpdateChilds(time);
   }
 
   _destroy() {
-    this.children.forEach((item) => item._destroy());
+    this._children.forEach((item) => item._destroy());
     this.destroy();
+    if (this.parent) {
+      this.parent.removeChild(this);
+    }
   }
 
   _render() {
@@ -100,7 +113,7 @@ export abstract class Entity {
       if (this.childrenVisible) {
         r.save();
         r.transform(this.transform);
-        this.children.forEach((item) => item._render());
+        this._children.forEach((item) => item._render());
         r.restore();
       }
       return;
@@ -109,13 +122,13 @@ export abstract class Entity {
     r.save();
     r.transform(this.transform);
     this.view.render();
-    this.children.forEach((item) => item._render());
+    this._children.forEach((item) => item._render());
     this.view.afterDrawChilds();
     r.restore();
   }
 
   sortChildsLayers() {
-    this.children = this.children.sort((a, b) => a.view.layer - b.view.layer);
+    this._children = this._children.sort((a, b) => a.view.layer - b.view.layer);
   }
 
   getAABB() {
@@ -124,11 +137,11 @@ export abstract class Entity {
 
   pointCollition(v: V2): undefined | Entity {
     this.transform.mulVInv(v);
-    for (let i = this.children.length - 1; i >= 0; i--) {
-      let entity = this.children[i];
+    for (let i = this._children.length - 1; i >= 0; i--) {
+      let entity = this._children[i];
       if (
-        (entity.dragable && entity.bounds.pointInside(v)) ||
-        entity.collider?.pointInside(v)
+        entity.selectable &&
+        (entity.bounds.pointInside(v) || entity.collider?.pointInside(v))
       ) {
         entity = entity.pointCollition(v) ?? entity;
         return entity;

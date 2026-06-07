@@ -5,19 +5,26 @@ import { ISelectionView } from "./ISelectionView";
 export class Selection extends Entity implements ISelectionView {
   start: V2;
   end: V2;
-  constructor() {
+  color: string;
+  constructor(public entity?: Entity) {
     super();
     this.start = new V2();
     this.end = new V2();
     this.type = "SELECTION";
-    this.dragable = false;
+    this.dragable = !!entity;
+    this.color = "#7dcfff6e";
+    if (entity) {
+      this.bounds = entity.bounds;
+    }
 
     this.view = new SelectionView(this);
     this.layer = 2;
   }
 
   ready(): void {
-    this._context.tree.registerEntity("SELECTION", this);
+    if (!this.entity) {
+      this._context.tree.registerEntity("SELECTION", this);
+    }
   }
 
   on_start(v: V2) {

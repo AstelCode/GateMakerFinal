@@ -91,8 +91,8 @@ export class EntityTree {
       for (let j = 0; j < layers[i].length; j++) {
         let entity = layers[i][j];
         if (
-          (entity.dragable && entity.bounds.pointInside(v)) ||
-          entity.collider?.pointInside(v)
+          entity.selectable &&
+          (entity.bounds.pointInside(v) || entity.collider?.pointInside(v))
         ) {
           entity = entity.pointCollition(v) ?? entity;
           return { entity, v: v };

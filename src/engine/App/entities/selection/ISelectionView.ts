@@ -4,4 +4,5 @@ export interface ISelectionView extends ViewData {
   start: V2;
   end: V2;
   bounds: AABB;
+  color: string;
 }

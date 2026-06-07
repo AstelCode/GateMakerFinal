@@ -72,6 +72,15 @@ export class AABB {
     );
   }
 
+  public contains(other: AABB): boolean {
+    return (
+      this.left <= other.left &&
+      this.right >= other.right &&
+      this.bottom <= other.bottom &&
+      this.top >= other.top
+    );
+  }
+
   public fromMaxAndMin(maxX: number, maxY: number, minX: number, minY: number) {
     this.position.x = (maxX + minX) / 2;
     this.position.y = (minY + maxY) / 2;
@@ -149,8 +158,5 @@ export class AABB {
     this.rightRelative = maxX;
     this.topRelative = maxY;
     this.bottomRelative = minY;
-
-    /* this.width = Math.max(Math.abs(maxX), Math.abs(minX)) * 2;
-    this.height = Math.max(Math.abs(maxY), Math.abs(minY)) * 2; */
   }
 }

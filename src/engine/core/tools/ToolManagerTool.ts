@@ -35,7 +35,7 @@ export class ToolManager {
 
   addTool(tool: Tool) {
     tool.context = this.context;
-    tool.disable = this.disableTool.bind(this);
+    tool.disable = this.disableMouse.bind(this);
     if (tool.mouseEvents.length > 0) {
       this.toolsMouse.push(tool);
       this.toolsMouse.sort((a, b) => a.priority - b.priority);
@@ -60,7 +60,7 @@ export class ToolManager {
     this.activeMouseTools.clear();
   }
 
-  private disableTool = (tool: Tool) => {
+  private disableMouse = (tool: Tool) => {
     for (const key of tool.mouseEvents) {
       this.activeMouseTools.delete(key as MouseEventType);
     }
@@ -68,6 +68,8 @@ export class ToolManager {
       this.activeShortcutsTools.delete(key);
     }
   };
+
+  private disableKeyboard = () => {};
 
   private mouse_down: HandlerCallback = (e: IMouseEvent) => {
     this.activateMouseTool("down", e);
@@ -94,7 +96,11 @@ export class ToolManager {
   };
 
   private keyup = () => {
-    this.activateShortcutTool("keyup");
+    for (const shortcut of this.activeShortcutsTools.keys()) {
+      this.activeShortcutsTools
+        .get(shortcut)
+        ?.onShortcutEvent(shortcut, "keyup");
+    }
   };
 
   private activateMouseTool(event: MouseEventType, e: IMouseEvent) {

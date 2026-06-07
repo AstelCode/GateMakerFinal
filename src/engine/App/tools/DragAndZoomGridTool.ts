@@ -1,15 +1,16 @@
 import { MouseEventType, IMouseEvent, Tool } from "@/engine/core";
 
-export class DragGridTool extends Tool {
-  name: string = "drag-grid";
+export class DragAndZoomGridTool extends Tool {
+  name: string = "drag-zoom-grid";
   shortcutsEvents: string[] = [];
-  mouseEvents: MouseEventType[] = ["down", "drag", "up"];
-  activationMouseEvents: string[] = ["down"];
+  mouseEvents: MouseEventType[] = ["down", "drag", "up", "wheel"];
+  activationMouseEvents: string[] = ["down", "wheel"];
   activationShortcutsEvents: string[] = [];
 
   isMouseActive(event: MouseEventType, e: IMouseEvent): boolean {
-    if (e.button != 1 /*! middle button */) return false;
-    return true;
+    if (event == "wheel") return true;
+    if (e.button == 1) return true;
+    return false;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,15 +19,20 @@ export class DragGridTool extends Tool {
   }
 
   onEvent(event: MouseEventType, e: IMouseEvent): void {
-    if (e.button != 1) {
-      this.disable?.(this);
-      return;
-    }
     switch (event) {
+      case "wheel":
+        const grid = this.context.tree.getEntity("GRID")!;
+        grid.emit("wheel", e);
+        this.disable?.(this);
+        break;
+      case "down":
       case "drag":
         this.context.tree.getEntity("GRID")?.emit("drag", e);
         break;
       case "up":
+        this.disable?.(this);
+        break;
+      default:
         this.disable?.(this);
         break;
     }
