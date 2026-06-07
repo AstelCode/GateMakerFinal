@@ -1,13 +1,13 @@
 import { EntityView } from "@/engine/core";
-import { IConnectorLogic } from "./IConnectorLogic";
+import { IConnectorView } from "./IConnectorView";
 import { CONECTOR_SIZE, CONNECTOR_RADIUS, FONTS } from "../../constants";
 import { Direction } from "../NodeBase/NodeBase";
 
-export class ConnectorView extends EntityView<IConnectorLogic> {
+export class ConnectorView extends EntityView<IConnectorView> {
   public color: string = "";
 
   render(): void {
-    const { name, direction, showLabel } = this.logic;
+    const { name, direction, showLabel } = this.data;
     const r = this.context.renderer;
     r.fillStyle(this.color);
     r.fillRectCenter(CONECTOR_SIZE, CONECTOR_SIZE, CONNECTOR_RADIUS);

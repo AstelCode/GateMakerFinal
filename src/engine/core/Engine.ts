@@ -8,8 +8,11 @@ import { EntityTree } from "./EntityTree";
 import { AssetManager } from "./assetManager/AssetManager";
 import { FontLoader, TextureLoader } from "./assetManager";
 import { IRenderer } from "./renderer";
+import { ToolManager } from "./tools/ToolManagerTool";
 
-export interface EngineContext<T extends Record<string, any>> {
+export interface EngineContext<
+  T extends Record<string, any> = Record<string, any>,
+> {
   mouse: MouseController;
   keyboard: KeyboardController;
   events: EventsHandler<T>;
@@ -20,7 +23,7 @@ export interface EngineContext<T extends Record<string, any>> {
 
 export class Engine<
   T extends Record<string, any>,
-  Context extends EngineContext<T>
+  Context extends EngineContext<T>,
 > {
   protected mouse: MouseController;
   protected keyboard: KeyboardController;
@@ -30,7 +33,7 @@ export class Engine<
   protected context: Context;
   protected tree: EntityTree;
   protected assets: AssetManager;
-
+  protected toolManager: ToolManager;
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new CanvasRenderer(canvas, { autoResize: true });
     this.mouse = new MouseController(canvas);
@@ -38,6 +41,7 @@ export class Engine<
     this.events = new EventsHandler();
     this.assets = new AssetManager();
     this.tree = new EntityTree();
+    this.toolManager = new ToolManager();
     this.assets.addLoader(new TextureLoader());
     this.assets.addLoader(new FontLoader());
     this.context = this.createContext();

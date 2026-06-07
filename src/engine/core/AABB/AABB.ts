@@ -25,6 +25,13 @@ export class AABB {
     this.rightRelative = width / 2;
   }
 
+  get width() {
+    return this.right - this.left;
+  }
+  get height() {
+    return this.top - this.bottom;
+  }
+
   set height(height: number) {
     this.topRelative = height / 2;
     this.bottomRelative = -height / 2;
@@ -77,10 +84,17 @@ export class AABB {
     startX: number,
     startY: number,
     width: number,
-    height: number
+    height: number,
   ) {
     this.fromMaxAndMin(startX + width, startY + height, startX, startY);
     return this;
+  }
+
+  public fromPoints(a: V2, b: V2) {
+    this.position.x = (a.x + b.x) / 2;
+    this.position.y = (a.y + b.y) / 2;
+    this.width = Math.abs(a.x - b.x);
+    this.height = Math.abs(a.y - b.y);
   }
 
   public combine(other: AABB): AABB {

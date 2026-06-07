@@ -78,6 +78,10 @@ export class CanvasRenderer implements IRenderer {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
 
+  begin() {
+    this.ctx.beginPath();
+  }
+
   drawFPS(fps: number) {
     this.ctx.save();
     this.ctx.fillStyle = "white";
@@ -136,10 +140,9 @@ export class CanvasRenderer implements IRenderer {
 
   rect(x: number, y: number, width: number, height: number, radius?: number) {
     if (radius) {
-      this.ctx.beginPath();
       this.ctx.roundRect(x, y, width, height, radius);
     } else {
-      this.ctx.fillRect(x, y, width, height);
+      this.ctx.rect(x, y, width, height);
     }
   }
 

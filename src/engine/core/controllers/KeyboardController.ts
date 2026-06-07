@@ -6,9 +6,15 @@ type HandlerCallback = ({
   isDown: boolean;
 }) => void;
 
-type KeyEventType = "keydown" | "keyup" | "keypress";
+export type KeyEventType =
+  | "keydown"
+  | "keyup"
+  | "keypress"
+  | `keydown:${string}`
+  | `keyup:${string}`
+  | `keypress:${string}`;
 
-type Handlers = Record<string, Record<KeyEventType, HandlerCallback[]>>;
+type Handlers = Partial<Record<KeyEventType, HandlerCallback[]>>;
 
 export class KeyboardController {
   private keys: Set<string> = new Set();
@@ -28,7 +34,8 @@ export class KeyboardController {
   private onKeyDown = (e: KeyboardEvent) => {
     if (!this.keys.has(e.key)) {
       this.keys.add(e.key);
-      this.executeHandlers("keydown", e.key, true);
+      this.executeHandlers(`keydown:${e.key}`, e.key, true);
+      this.executeHandlers(`keydown`, e.key, true);
     }
     this.executeShortcuts();
   };
@@ -36,27 +43,22 @@ export class KeyboardController {
   private onKeyUp = (e: KeyboardEvent) => {
     if (this.keys.has(e.key)) {
       this.keys.delete(e.key);
-      this.executeHandlers("keyup", e.key, false);
+      this.executeHandlers(`keyup:${e.key}`, e.key, false);
+      this.executeHandlers(`keyup`, e.key, true);
     }
   };
 
   private executeHandlers(event: KeyEventType, key: string, isDown: boolean) {
-    const handlers = this.handlers[key] || {};
-    handlers[event]?.forEach((handler) => handler({ key, isDown }));
+    this.handlers[event]?.forEach((handler) => handler({ key, isDown }));
   }
 
   private onKeyPress = (e: KeyboardEvent) => {
     this.executeHandlers("keypress", e.key, true);
   };
 
-  public on(event: KeyEventType, key: string, callback: HandlerCallback) {
-    if (!this.handlers[key]) {
-      this.handlers[key] = { keydown: [], keyup: [], keypress: [] };
-    }
-    if (!this.handlers[key][event]) {
-      this.handlers[key][event] = [];
-    }
-    this.handlers[key][event].push(callback);
+  public on(event: KeyEventType, callback: HandlerCallback) {
+    this.handlers[event] ??= [];
+    this.handlers[event].push(callback);
   }
 
   public onShortcut(key: string, callback: HandlerCallback) {
@@ -75,6 +77,11 @@ export class KeyboardController {
         );
       }
     });
+  }
+
+  public isActiveShortcut(shortcut: string): boolean {
+    const keys = shortcut.split("+");
+    return keys.every((key) => this.keys.has(key));
   }
 
   public destroy() {

@@ -11,3 +11,4 @@ export * from "./timingFunctions";
 export * from "./EntityView";
 export * from "./ILogic";
 export * from "./assetManager";
+export * from "./tools/ToolManagerTool";

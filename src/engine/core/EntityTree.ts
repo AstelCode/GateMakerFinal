@@ -90,7 +90,10 @@ export class EntityTree {
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
         let entity = layers[i][j];
-        if (entity.bounds.pointInside(v) || entity.collider?.pointInside(v)) {
+        if (
+          (entity.dragable && entity.bounds.pointInside(v)) ||
+          entity.collider?.pointInside(v)
+        ) {
           entity = entity.pointCollition(v) ?? entity;
           return { entity, v: v };
         }
@@ -106,6 +109,7 @@ export class EntityTree {
   }
 
   destroy() {
+    this._entities.forEach((item) => item._destroy());
     this._layers.length = 0;
     this._entities.length = 0;
     this.entityRecord.clear();

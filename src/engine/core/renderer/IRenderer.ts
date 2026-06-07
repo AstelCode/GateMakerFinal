@@ -68,4 +68,5 @@ export interface IRenderer {
   stroke(): void;
 
   drawPath(path: V2[], width: number, radius?: number): void;
+  begin(): void;
 }

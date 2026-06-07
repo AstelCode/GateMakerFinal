@@ -24,6 +24,8 @@ export abstract class Entity {
   protected view!: EntityView<any>;
 
   public dragable: boolean;
+  public visible: boolean;
+  public childrenVisible: boolean;
 
   constructor() {
     this.id = uuid();
@@ -32,6 +34,8 @@ export abstract class Entity {
     this.children = [];
     this.type = "";
     this.dragable = true;
+    this.childrenVisible = true;
+    this.visible = true;
   }
 
   get layer() {
@@ -67,6 +71,7 @@ export abstract class Entity {
   ready() {}
   update(time: number) {}
   afterUpdateChilds(time: number) {}
+  destroy() {}
 
   adjustPosition() {}
 
@@ -83,8 +88,23 @@ export abstract class Entity {
     this.afterUpdateChilds(time);
   }
 
+  _destroy() {
+    this.children.forEach((item) => item._destroy());
+    this.destroy();
+  }
+
   _render() {
     const r = this._context.renderer;
+
+    if (!this.visible) {
+      if (this.childrenVisible) {
+        r.save();
+        r.transform(this.transform);
+        this.children.forEach((item) => item._render());
+        r.restore();
+      }
+      return;
+    }
     this.view.renderAbsolute();
     r.save();
     r.transform(this.transform);
@@ -106,7 +126,10 @@ export abstract class Entity {
     this.transform.mulVInv(v);
     for (let i = this.children.length - 1; i >= 0; i--) {
       let entity = this.children[i];
-      if (entity.bounds.pointInside(v) || entity.collider?.pointInside(v)) {
+      if (
+        (entity.dragable && entity.bounds.pointInside(v)) ||
+        entity.collider?.pointInside(v)
+      ) {
         entity = entity.pointCollition(v) ?? entity;
         return entity;
       }

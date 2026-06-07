@@ -5,6 +5,7 @@ import { CELL_SIZE } from "../../constants";
 export class Wire extends Entity {
   public path: V2[];
   public thicknest: number;
+
   constructor() {
     super();
     this.view = new WireView(this);
@@ -17,5 +18,9 @@ export class Wire extends Entity {
     this.thicknest = 20;
     this.transform.position.set(CELL_SIZE / 2, CELL_SIZE / 2);
     this.transform.updateMatriz();
+  }
+
+  addPoint(v: V2) {
+    this.path.push(v);
   }
 }

@@ -1,5 +1,5 @@
 import { Transform } from "./math";
 
-export interface ILogic {
+export interface ViewData {
   transform: Transform;
 }

@@ -4,18 +4,18 @@ import { EngineContext } from "./Engine";
 export abstract class EntityView<T> {
   protected _context!: EngineContext<any>;
   protected _layer: number = 0;
-  protected _logic!: T;
+  protected _data!: T;
 
   constructor(logic: T) {
-    this._logic = logic;
+    this._data = logic;
   }
 
-  set logic(entity: T) {
-    this._logic = entity;
+  set data(entity: T) {
+    this._data = entity;
   }
 
-  get logic() {
-    return this._logic;
+  get data() {
+    return this._data;
   }
 
   async loadAssets() {}

@@ -1,15 +1,20 @@
-type MouseEventType = "down" | "move" | "up" | "dblclick" | "wheel" | "drag";
-type HandlerCallback = ({
-  x,
-  y,
-  delta,
-}: {
+export type MouseEventType =
+  | "down"
+  | "move"
+  | "up"
+  | "dblclick"
+  | "wheel"
+  | "drag";
+
+export type IMouseEvent = {
   x: number;
   y: number;
   dx: number;
   dy: number;
   delta: number;
-}) => void;
+  button: number;
+};
+export type HandlerCallback = ({ x, y, delta }: IMouseEvent) => void;
 
 export class MouseController {
   private _x: number;
@@ -18,6 +23,7 @@ export class MouseController {
   private _dx: number;
   private _dy: number;
   private _dragging: boolean = false;
+  private _button: number;
 
   private handlers: Record<MouseEventType, HandlerCallback[]> = {
     down: [],
@@ -34,6 +40,7 @@ export class MouseController {
     this._dx = 0;
     this._dy = 0;
     this._delta = 0;
+    this._button = 0;
     this.initialize();
   }
 
@@ -60,6 +67,7 @@ export class MouseController {
     this._dragging = true;
     this._dx = 0;
     this._dy = 0;
+    this._button = e.button;
     this.executeHandlers("down");
   };
 
@@ -80,12 +88,15 @@ export class MouseController {
     this._x = e.clientX;
     this._y = e.clientY;
     this._dragging = false;
+    this._button = e.button;
+
     this.executeHandlers("up");
   };
 
   private onDblClick = (e: MouseEvent) => {
     this._x = e.clientX;
     this._y = e.clientY;
+    this._button = e.button;
     this.executeHandlers("dblclick");
   };
 
@@ -93,6 +104,7 @@ export class MouseController {
     this._x = e.clientX;
     this._y = e.clientY;
     this._delta = e.deltaY;
+    this._button = e.button;
     this.executeHandlers("wheel");
   };
 
@@ -104,6 +116,7 @@ export class MouseController {
         delta: this._delta,
         dx: this._dx,
         dy: this._dy,
+        button: this._button,
       }),
     );
   }

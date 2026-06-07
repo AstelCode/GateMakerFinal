@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AABB, Entity, RectangleCollider, V2 } from "@/engine/core";
 import { CELL_SIZE, CONECTOR_SIZE } from "../../constants";
 import { Connector } from "../connector/Connector";
-import { INodeBaseLogic } from "./INodeBaseLogic";
+import { INodeBaseView } from "./INodeBaseView";
 import { NodeBaseView } from "./NodeBaseView";
 
 export enum Direction {
@@ -19,7 +18,7 @@ interface IConnector {
   box?: AABB;
 }
 
-export class NodeBase extends Entity implements INodeBaseLogic {
+export class NodeBase extends Entity implements INodeBaseView {
   public collider: RectangleCollider;
   public width: number;
   public height: number;
@@ -76,11 +75,11 @@ export class NodeBase extends Entity implements INodeBaseLogic {
 
       if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x + off, y))
+          new Connector(con.name, con.direction, new V2(x + off, y)),
         );
       } else {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x, y + off))
+          new Connector(con.name, con.direction, new V2(x, y + off)),
         );
       }
     }
@@ -94,7 +93,7 @@ export class NodeBase extends Entity implements INodeBaseLogic {
     this.newPosition.copy(this.transform.position);
   }
 
-  on_drag(_: any, delta: V2) {
+  on_drag(delta: V2) {
     this.transform.position.addV(delta);
     this.transform.updateMatriz();
     this.isDragging = true;

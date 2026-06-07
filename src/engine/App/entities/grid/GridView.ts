@@ -1,5 +1,5 @@
 import { EntityView } from "@/engine/core";
-import { IGridLogic } from "./IGridLogic";
+import { IGridView } from "./IGridView";
 import { ITextureData } from "@/engine/core/assetManager";
 import {
   CELL_SIZE,
@@ -9,7 +9,7 @@ import {
   GRID_DOT_COLOR,
 } from "../../constants";
 
-export class GridView extends EntityView<IGridLogic> {
+export class GridView extends EntityView<IGridView> {
   private texture!: HTMLImageElement;
   async loadAssets(): Promise<void> {
     this._context.assets.register<ITextureData>(
@@ -56,7 +56,7 @@ export class GridView extends EntityView<IGridLogic> {
   }
 
   renderAbsolute(): void {
-    const { transform } = this.logic;
+    const { transform } = this.data;
     const r = this._context.renderer;
     r.save();
 

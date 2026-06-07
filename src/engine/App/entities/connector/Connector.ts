@@ -5,10 +5,10 @@ import {
   CONECTOR_SIZE,
 } from "../../constants";
 import { ConnectorView } from "./ConnectorView";
-import { IConnectorLogic } from "./IConnectorLogic";
+import { IConnectorView } from "./IConnectorView";
 import { Direction } from "../NodeBase/NodeBase";
 
-export class Connector extends Entity implements IConnectorLogic {
+export class Connector extends Entity implements IConnectorView {
   public collider: RectangleCollider;
   protected view: ConnectorView;
   public showLabel: boolean;

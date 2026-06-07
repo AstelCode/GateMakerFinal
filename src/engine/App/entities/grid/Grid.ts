@@ -23,6 +23,21 @@ export class Grid extends Entity {
     this.view = new GridView(this);
   }
 
+  private resize = () => {
+    const { width: w, height: h } = this._context.renderer;
+
+    this.collider.width = w;
+    this.collider.height = h;
+
+    this.bounds.width = w;
+    this.bounds.height = h;
+
+    this.pivot.x = w / 2;
+    this.pivot.y = h / 2;
+    this.transform.position.copy(this.pivot);
+    this.transform.updateMatriz();
+  };
+
   ready(): void {
     this._context.tree.registerEntity("GRID", this);
     const { width: w, height: h } = this._context.renderer;
@@ -40,6 +55,12 @@ export class Grid extends Entity {
     const range = MAX_ZOOM - MIN_ZOOM;
     this.transform.scale = range * smoothZoom(this.t) + MIN_ZOOM;
     this.transform.updateMatriz();
+
+    window.addEventListener("resize", this.resize);
+  }
+
+  destroy(): void {
+    window.removeEventListener("resize", this.resize);
   }
 
   on_drag({ dx, dy }: { dx: number; dy: number }) {

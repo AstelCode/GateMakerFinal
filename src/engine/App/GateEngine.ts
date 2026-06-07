@@ -1,18 +1,27 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { Engine, EngineContext, Entity, V2 } from "../core";
+import { Engine, EngineContext, Entity } from "../core";
 import { IFontData } from "../core/assetManager";
 import { FONTS_DATA } from "./constants";
 import { Grid } from "./entities/grid/Grid";
 import { NodeBase } from "./entities/NodeBase/NodeBase";
-import { Wire } from "./entities/wire/Wire";
+import { ZoomGridTool } from "./tools/ZoomGridTool";
+import { DragGridTool } from "./tools/DragGridTool";
+import { DragNodeTool } from "./tools/DragNodeTool";
+import { Selection } from "./entities/selection/Selection";
+import { SelectionTool } from "./tools/SelectionTool";
 
-interface GateEngineEvents {}
+export interface GateEngineEvents {}
 
-interface GateEngineContext extends EngineContext<GateEngineEvents> {}
+export interface GateEngineContext extends EngineContext<GateEngineEvents> {}
 
 export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
+    this.toolManager.setContext(this.context);
+    this.toolManager.addTool(new ZoomGridTool());
+    this.toolManager.addTool(new DragGridTool());
+    this.toolManager.addTool(new DragNodeTool());
+    this.toolManager.addTool(new SelectionTool());
   }
 
   protected registerAssets(): void {
@@ -27,47 +36,18 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     node.transform.position.y += 400;
     node.transform.updateMatriz();
     grid.addChild(node);
-    const wire = new Wire();
-    grid.addChild(wire);
+    grid.addChild(new Selection());
     this.initEvents();
   }
 
   selectedNode: Entity | undefined = undefined;
   activeNode: Entity | undefined = undefined;
+
   protected initEvents() {
-    this.mouse.on("drag", (e) => {
-      if (!this.activeNode) return;
-      if (!this.activeNode.dragable) return;
-      const v = new V2(e.dx, e.dy);
-      this.activeNode.getTransformPath().forEach((item) => item.mulVInv(v, 0));
-      this.activeNode.emit("drag", e, v);
-    });
-    this.mouse.on("wheel", (e) => {
-      const grid = this.tree.getEntity("GRID")!;
-      grid.emit("wheel", e);
-    });
-
-    this.mouse.on("down", (e) => {
-      const { entity, v } = this.tree.pointCollition(e);
-      entity?.emit("down", v, e);
-      entity?.emit("dragStart");
-      this.activeNode = entity;
-    });
-
-    this.mouse.on("move", (e) => {
-      const { entity, v } = this.tree.pointCollition(e);
-      if (this.selectedNode) {
-        this.selectedNode.emit("leave");
-      }
-      this.selectedNode = entity;
-      entity?.emit("hover", v, e);
-    });
-
-    // this.mouse.on("drag", ({ dx, dy }) => {});
-
-    this.mouse.on("up", () => {
-      this.activeNode?.emit("dragEnd");
-      this.activeNode = undefined;
-    });
+    this.toolManager.init();
+  }
+  public destroy(): void {
+    super.destroy();
+    this.toolManager.destroy();
   }
 }
