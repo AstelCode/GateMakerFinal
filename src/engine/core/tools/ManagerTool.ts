@@ -38,22 +38,20 @@ export class ToolManager {
     tool.disable = this.disableMouse.bind(this);
     if (tool.mouseEvents.length > 0) {
       this.toolsMouse.push(tool);
-      this.toolsMouse.sort((a, b) => a.priority - b.priority);
+      this.toolsMouse.sort((a, b) => b.priority - a.priority);
     }
     if (tool.shortcutsEvents.length > 0) {
       this.toolsShortcut.push(tool);
-      this.toolsShortcut.sort((a, b) => a.priority - b.priority);
+      this.toolsShortcut.sort((a, b) => b.priority - a.priority);
     }
   }
 
   init() {
-    this.context.mouse.on("down", this.mouse_down.bind(this));
-    this.context.mouse.on("drag", this.mouse_drag.bind(this));
-    this.context.mouse.on("move", this.mouse_move.bind(this));
-    this.context.mouse.on("up", this.mouse_up.bind(this));
-    this.context.mouse.on("wheel", this.mouse_wheel.bind(this));
     this.context.keyboard.on("keydown", this.keydown.bind(this));
     this.context.keyboard.on("keyup", this.keyup.bind(this));
+    this.context.mouse.addListener((event, e) => {
+      this.activateMouseTool(event, e);
+    });
   }
 
   destroy() {
@@ -67,28 +65,6 @@ export class ToolManager {
     for (const key of tool.shortcutsEvents) {
       this.activeShortcutsTools.delete(key);
     }
-  };
-
-  private disableKeyboard = () => {};
-
-  private mouse_down: HandlerCallback = (e: IMouseEvent) => {
-    this.activateMouseTool("down", e);
-  };
-
-  private mouse_drag: HandlerCallback = (e) => {
-    this.activateMouseTool("drag", e);
-  };
-
-  private mouse_move: HandlerCallback = (e) => {
-    this.activateMouseTool("move", e);
-  };
-
-  private mouse_up: HandlerCallback = (e) => {
-    this.activateMouseTool("up", e);
-  };
-
-  private mouse_wheel: HandlerCallback = (e) => {
-    this.activateMouseTool("wheel", e);
   };
 
   private keydown = () => {

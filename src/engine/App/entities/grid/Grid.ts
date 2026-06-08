@@ -19,6 +19,7 @@ export class Grid extends Entity {
     this.collider = new RectangleCollider();
     this.collider.setPosition(this.pivot);
     this.bounds = new AABB(this.pivot);
+    this.bounds.setPosition(this.pivot);
     this.type = "GRID";
     this.view = new GridView(this);
     this.dragable = false;

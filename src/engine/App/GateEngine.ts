@@ -5,9 +5,9 @@ import { FONTS_DATA } from "./constants";
 import { Grid } from "./entities/grid/Grid";
 import { NodeBase } from "./entities/NodeBase/NodeBase";
 import { DragAndZoomGridTool } from "./tools/DragAndZoomGridTool";
-import { DragNodeTool } from "./tools/DragNodeTool";
 import { Selection } from "./entities/selection/Selection";
 import { SelectionTool } from "./tools/SelectionTool";
+import { AddWireTool } from "./tools/AddWireTool";
 
 export interface GateEngineEvents {}
 
@@ -21,6 +21,7 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     this.toolManager.setContext(this.context);
     this.toolManager.addTool(new DragAndZoomGridTool());
     this.toolManager.addTool(new SelectionTool());
+    this.toolManager.addTool(new AddWireTool());
   }
 
   protected registerAssets(): void {

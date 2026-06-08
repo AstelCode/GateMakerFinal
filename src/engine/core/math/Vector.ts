@@ -182,7 +182,7 @@ export class V2 {
     return this;
   }
 
-  snapToGridSmooth(cellSize: number, easing: number = 0.2) {
+  snapToGridSmooth(cellSize: number, easing: number = 1) {
     const snappedX = Math.round(this.x / cellSize) * cellSize;
     const snappedY = Math.round(this.y / cellSize) * cellSize;
     this.x += (snappedX - this.x) * easing;

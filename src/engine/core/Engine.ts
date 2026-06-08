@@ -8,7 +8,7 @@ import { EntityTree } from "./EntityTree";
 import { AssetManager } from "./assetManager/AssetManager";
 import { FontLoader, TextureLoader } from "./assetManager";
 import { IRenderer } from "./renderer";
-import { ToolManager } from "./tools/ToolManagerTool";
+import { ToolManager } from "./tools/ManagerTool";
 
 export interface EngineContext<
   T extends Record<string, any> = Record<string, any>,

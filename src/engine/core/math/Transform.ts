@@ -49,6 +49,12 @@ export class Transform {
     return v;
   }
 
+  mulV(v: V2, z: number = 1) {
+    v.x = (v.x + this.position.x * z) * this.scale;
+    v.y = (v.y + this.position.y * z) * this.scale;
+    return v;
+  }
+
   toDOMMatriz() {
     return this.domMatriz;
   }
@@ -71,7 +77,7 @@ export class Transform {
       this.domMatriz.c,
       this.domMatriz.d,
       this.domMatriz.e,
-      this.domMatriz.f
+      this.domMatriz.f,
     );
   }
   clone() {

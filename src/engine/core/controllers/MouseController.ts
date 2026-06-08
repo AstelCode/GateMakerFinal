@@ -4,7 +4,10 @@ export type MouseEventType =
   | "up"
   | "dblclick"
   | "wheel"
-  | "drag";
+  | "drag"
+  | "down:wheel"
+  | "up:wheel"
+  | "drag:wheel";
 
 export type IMouseEvent = {
   x: number;
@@ -15,7 +18,7 @@ export type IMouseEvent = {
   button: number;
 };
 export type HandlerCallback = ({ x, y, delta }: IMouseEvent) => void;
-
+export type Listener = (event: MouseEventType, e: IMouseEvent) => void;
 export class MouseController {
   private _x: number;
   private _y: number;
@@ -32,7 +35,12 @@ export class MouseController {
     dblclick: [],
     wheel: [],
     drag: [],
+    "down:wheel": [],
+    "up:wheel": [],
+    "drag:wheel": [],
   };
+
+  private _listeners: Array<Listener>;
 
   constructor(private _canvas: HTMLCanvasElement) {
     this._x = 0;
@@ -41,7 +49,12 @@ export class MouseController {
     this._dy = 0;
     this._delta = 0;
     this._button = 0;
+    this._listeners = [];
     this.initialize();
+  }
+
+  addListener(listener: Listener) {
+    this._listeners.push(listener);
   }
 
   private initialize() {
@@ -68,7 +81,12 @@ export class MouseController {
     this._dx = 0;
     this._dy = 0;
     this._button = e.button;
-    this.executeHandlers("down");
+    if (this._button == 1) {
+      this.executeHandlers("down:wheel");
+    }
+    if (this._button == 0) {
+      this.executeHandlers("down");
+    }
   };
 
   private onMouseMove = (_e: Event) => {
@@ -76,11 +94,18 @@ export class MouseController {
     if (this._dragging) {
       this._dx = e.clientX - this._x;
       this._dy = e.clientY - this._y;
-      this.executeHandlers("drag");
+
+      if (this._button == 1) {
+        this.executeHandlers("drag:wheel");
+      }
+      if (this._button == 0) {
+        this.executeHandlers("drag");
+      }
     }
 
     this._x = e.clientX;
     this._y = e.clientY;
+
     this.executeHandlers("move");
   };
 
@@ -89,8 +114,12 @@ export class MouseController {
     this._y = e.clientY;
     this._dragging = false;
     this._button = e.button;
-
-    this.executeHandlers("up");
+    if (this._button == 1) {
+      this.executeHandlers("up:wheel");
+    }
+    if (this._button == 0) {
+      this.executeHandlers("up");
+    }
   };
 
   private onDblClick = (e: MouseEvent) => {
@@ -109,16 +138,16 @@ export class MouseController {
   };
 
   private executeHandlers(event: MouseEventType) {
-    this.handlers[event].forEach((handler) =>
-      handler({
-        x: this._x,
-        y: this._y,
-        delta: this._delta,
-        dx: this._dx,
-        dy: this._dy,
-        button: this._button,
-      }),
-    );
+    const e = {
+      x: this._x,
+      y: this._y,
+      delta: this._delta,
+      dx: this._dx,
+      dy: this._dy,
+      button: this._button,
+    };
+    this._listeners.forEach((item) => item(event, e));
+    this.handlers[event].forEach((handler) => handler(e));
   }
 
   public on(event: MouseEventType, callback: HandlerCallback) {
@@ -144,6 +173,9 @@ export class MouseController {
       dblclick: [],
       wheel: [],
       drag: [],
+      "down:wheel": [],
+      "drag:wheel": [],
+      "up:wheel": [],
     };
   }
 }

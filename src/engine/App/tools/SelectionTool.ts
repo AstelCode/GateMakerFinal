@@ -15,11 +15,11 @@ export class SelectionTool extends Tool {
   shortcutsEvents: string[] = ["Shift"];
   activationMouseEvents: string[] = ["down"];
   activationShortcutsEvents: string[] = ["Shift"];
+  priority: number = 1;
 
   isMouseActive(event: MouseEventType, e: IMouseEvent): boolean {
     if (e.button != 0) return false;
     const { entity } = this.context.tree.pointCollition(e);
-
     return (
       entity?.type == "GRID" || entity?.dragable || entity?.type == "SELECTION"
     );
@@ -94,6 +94,7 @@ export class SelectionTool extends Tool {
       entity?.dragable &&
       !ctx.activeSelection.some((item) => item.entity?.id == entity.id)
     ) {
+      entity.emit("dragStart");
       this.selectEntities([entity]);
       this.isDragging = true;
     }

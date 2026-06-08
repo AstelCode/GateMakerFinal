@@ -7,6 +7,7 @@ export class CircleCollider extends Collider {
   constructor(r: number = 0) {
     super();
     this._radius = r;
+    this.updateAABB();
   }
 
   get radius() {

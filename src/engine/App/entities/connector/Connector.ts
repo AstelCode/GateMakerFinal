@@ -33,6 +33,7 @@ export class Connector extends Entity implements IConnectorView {
     this.showLabel = false;
     this.type = "CONNECTOR";
     this.dragable = false;
+    this.selectable = true;
   }
 
   on_hover() {

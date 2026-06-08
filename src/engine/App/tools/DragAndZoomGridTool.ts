@@ -3,9 +3,15 @@ import { MouseEventType, IMouseEvent, Tool } from "@/engine/core";
 export class DragAndZoomGridTool extends Tool {
   name: string = "drag-zoom-grid";
   shortcutsEvents: string[] = [];
-  mouseEvents: MouseEventType[] = ["down", "drag", "up", "wheel"];
-  activationMouseEvents: string[] = ["down", "wheel"];
+  mouseEvents: MouseEventType[] = [
+    "down:wheel",
+    "drag:wheel",
+    "up:wheel",
+    "wheel",
+  ];
+  activationMouseEvents: string[] = ["down:wheel", "wheel"];
   activationShortcutsEvents: string[] = [];
+  priority: number = 0;
 
   isMouseActive(event: MouseEventType, e: IMouseEvent): boolean {
     if (event == "wheel") return true;
@@ -25,11 +31,15 @@ export class DragAndZoomGridTool extends Tool {
         grid.emit("wheel", e);
         this.disable?.(this);
         break;
-      case "down":
-      case "drag":
+      case "down:wheel":
+      case "drag:wheel":
+        if (e.button != 1) {
+          this.disable?.(this);
+          break;
+        }
         this.context.tree.getEntity("GRID")?.emit("drag", e);
         break;
-      case "up":
+      case "up:wheel":
         this.disable?.(this);
         break;
       default:

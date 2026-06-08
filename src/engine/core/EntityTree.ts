@@ -89,14 +89,16 @@ export class EntityTree {
     const layers = this.layers;
     for (let i = 0; i < layers.length; i++) {
       for (let j = 0; j < layers[i].length; j++) {
-        let entity = layers[i][j];
-        if (
-          entity.selectable &&
-          (entity.bounds.pointInside(v) || entity.collider?.pointInside(v))
-        ) {
-          entity = entity.pointCollition(v) ?? entity;
-          return { entity, v: v };
+        let entity: Entity | undefined = layers[i][j];
+        if (!entity.selectable) continue;
+        if (!entity.bounds.pointInside(v)) continue;
+        const insideEntity = entity.collider && entity.collider.pointInside(v);
+        const child = entity.pointCollition(v);
+        if (!insideEntity && entity.collider) {
+          entity = undefined;
         }
+        entity = child ?? entity;
+        return { entity, v: v };
       }
     }
     return { entity: undefined, v };

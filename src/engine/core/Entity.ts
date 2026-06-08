@@ -17,7 +17,7 @@ export abstract class Entity {
   public transform: Transform;
 
   protected _children: Entity[];
-  protected parent?: Entity;
+  public parent?: Entity;
 
   protected _context!: EngineContext<any>;
 
@@ -138,25 +138,59 @@ export abstract class Entity {
   pointCollition(v: V2): undefined | Entity {
     this.transform.mulVInv(v);
     for (let i = this._children.length - 1; i >= 0; i--) {
-      let entity = this._children[i];
-      if (
-        entity.selectable &&
-        (entity.bounds.pointInside(v) || entity.collider?.pointInside(v))
-      ) {
-        entity = entity.pointCollition(v) ?? entity;
-        return entity;
+      let entity: Entity | undefined = this._children[i];
+      if (!entity.selectable) continue;
+      if (!entity.bounds.pointInside(v)) continue;
+
+      const insideEntity = entity.collider && entity.collider.pointInside(v);
+      const child = entity.pointCollition(v);
+      if (!insideEntity && entity.collider) {
+        entity = undefined;
       }
+      entity = child ?? entity;
+
+      return entity;
     }
   }
 
-  getTransformPath() {
+  getInvGlobalTransformPath(depth: number = 0) {
     const path: Transform[] = [];
     let parent = this.parent;
     while (parent != undefined) {
       path.unshift(parent.transform);
       parent = parent.parent;
     }
+    path.slice(0, path.length - depth);
     return path;
+  }
+
+  mulInvGlobalTrasform(v: V2, depth: number = 0) {
+    let path: Transform[] = [];
+    let parent = this.parent;
+    while (parent != undefined) {
+      path.unshift(parent.transform);
+      parent = parent.parent;
+    }
+    path = path.slice(0, path.length - depth);
+    for (const transform of path) {
+      transform.mulVInv(v);
+    }
+    return v;
+  }
+
+  mulGlobalTrasform(v: V2, depth: number = 0) {
+    let path: Transform[] = [];
+    let parent = this.parent;
+    while (parent != undefined) {
+      path.push(parent.transform);
+      parent = parent.parent;
+    }
+    debugger;
+    path = path.slice(0, path.length - depth);
+    for (const transform of path) {
+      transform.mulV(v);
+    }
+    return v;
   }
 
   emit(event: string, ...data: any) {

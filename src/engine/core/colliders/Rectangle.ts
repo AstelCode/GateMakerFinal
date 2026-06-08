@@ -11,6 +11,7 @@ export class RectangleCollider extends Collider {
     super();
     this._width = width;
     this._height = height;
+    this.updateAABB();
   }
 
   get width() {

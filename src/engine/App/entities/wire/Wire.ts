@@ -9,18 +9,29 @@ export class Wire extends Entity {
   constructor() {
     super();
     this.view = new WireView(this);
-    this.path = [
-      new V2(0, 0),
-      new V2(100, 0),
-      new V2(100, 200),
-      new V2(200, 200),
-    ];
+    this.path = [];
     this.thicknest = 20;
-    this.transform.position.set(CELL_SIZE / 2, CELL_SIZE / 2);
     this.transform.updateMatriz();
   }
 
-  addPoint(v: V2) {
+  setStart(v: V2) {
     this.path.push(v);
+    this.path.push(v.clone());
+  }
+
+  setEnd(v: V2) {
+    this.path.push(v);
+  }
+
+  addPoint() {
+    const v = this.path[this.path.length - 1];
+    v.x = Math.floor(v.x / CELL_SIZE) * CELL_SIZE + CELL_SIZE / 2;
+    v.y = Math.floor(v.y / CELL_SIZE) * CELL_SIZE + CELL_SIZE / 2;
+    this.path.push(v);
+    this.path.push(v.clone());
+  }
+
+  moveLast(v: V2) {
+    this.path[this.path.length - 1].copy(v);
   }
 }

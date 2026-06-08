@@ -10,6 +10,7 @@ export class PathCollider extends Collider {
     super();
     this._path = path;
     this._width = width;
+    this.updateAABB();
   }
 
   get path() {
