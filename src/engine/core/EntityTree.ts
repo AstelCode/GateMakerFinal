@@ -9,10 +9,12 @@ export class EntityTree {
   private _entities: Entity[];
   private _context!: EngineContext<any>;
   private entityRecord: Map<string, Entity>;
+  private unInitEntities: Entity[];
 
   constructor() {
     this._layers = [];
     this._entities = [];
+    this.unInitEntities = [];
     this.entityRecord = new Map();
   }
 
@@ -36,7 +38,18 @@ export class EntityTree {
     return this.entityRecord.get(name);
   }
 
-  async addEntity(entity: Entity) {
+  initEntity(entity: Entity) {
+    if (entity.isReady) return;
+    this.unInitEntities.push(entity);
+  }
+
+  async initEntities() {
+    const copy = this.unInitEntities.slice();
+    this.unInitEntities.length = 0;
+    await Promise.all(copy.map((item) => item.init()));
+  }
+
+  addEntity(entity: Entity) {
     if (this._layers.length <= entity.layer) {
       for (i = this._layers.length; i <= entity.layer; i++) {
         this._layers.push([]);
@@ -45,14 +58,15 @@ export class EntityTree {
     this._layers[entity.layer].push(entity);
     this._entities.push(entity);
     entity.context = this._context;
-    await entity._ready();
+    this.initEntity(entity);
+    //await entity.init();
   }
 
   async setChild(entity: Entity, child: Entity) {
     if (entity.id == child.id) return;
     entity.addChild(child);
     child.context = this._context;
-    await child._ready();
+    await child.init();
   }
 
   removeEntity(entity: Entity) {
@@ -84,7 +98,7 @@ export class EntityTree {
     }
   }
 
-  pointCollition(p: { x: number; y: number }) {
+  pointCollition(p: { x: number; y: number }, applyTransform: boolean = false) {
     const v = new V2(p.x, p.y);
     const layers = this.layers;
     for (let i = 0; i < layers.length; i++) {
@@ -93,7 +107,7 @@ export class EntityTree {
         if (!entity.selectable) continue;
         if (!entity.bounds.pointInside(v)) continue;
         const insideEntity = entity.collider && entity.collider.pointInside(v);
-        const child = entity.pointCollition(v);
+        const child = entity.pointCollition(v, applyTransform);
         if (!insideEntity && entity.collider) {
           entity = undefined;
         }

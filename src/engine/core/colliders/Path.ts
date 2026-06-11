@@ -6,11 +6,12 @@ export class PathCollider extends Collider {
   private _width: number = 0;
 
   constructor();
+  constructor(path: V2[], width?: number);
   constructor(path: V2[] = [], width: number = 0) {
     super();
     this._path = path;
     this._width = width;
-    this.updateAABB();
+    this.updateBounds();
   }
 
   get path() {
@@ -25,11 +26,11 @@ export class PathCollider extends Collider {
     this._width = value;
   }
 
-  public updateAABB() {
-    let maxX = 0,
-      maxY = 0;
-    let minY = Number.MAX_VALUE,
-      minX = Number.MAX_VALUE;
+  public updateBounds() {
+    let maxX = Number.MIN_SAFE_INTEGER,
+      maxY = Number.MIN_SAFE_INTEGER;
+    let minY = Number.MAX_SAFE_INTEGER,
+      minX = Number.MAX_SAFE_INTEGER;
     for (const v of this.path) {
       maxX = Math.max(v.x, maxX);
       maxY = Math.max(v.y, maxY);
@@ -37,11 +38,16 @@ export class PathCollider extends Collider {
       minY = Math.min(v.y, minY);
     }
 
-    this.aabb.fromMaxAndMin(maxX, maxY, minX, minY);
+    this.bounds.fromMaxAndMin(
+      maxX + this.width / 2,
+      maxY + this.width / 2,
+      minX - this.width / 2,
+      minY - this.width / 2,
+    );
   }
 
   public pointInside(v: V2): boolean {
-    if (!this.aabb.pointInside(v)) return false;
+    if (!this.bounds.pointInside(v)) return false;
     const radius = this._width / 2;
 
     // Check each line segment in the path

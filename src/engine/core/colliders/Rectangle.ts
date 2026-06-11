@@ -11,7 +11,7 @@ export class RectangleCollider extends Collider {
     super();
     this._width = width;
     this._height = height;
-    this.updateAABB();
+    this.updateBounds();
   }
 
   get width() {
@@ -24,26 +24,26 @@ export class RectangleCollider extends Collider {
 
   set width(value: number) {
     this._width = value;
-    this.updateAABB();
+    this.updateBounds();
   }
 
   set height(value: number) {
     this._height = value;
-    this.updateAABB();
+    this.updateBounds();
   }
 
   set size(value: number) {
     this._width = value;
     this._height = value;
-    this.updateAABB();
+    this.updateBounds();
   }
 
   public pointInside(v: V2): boolean {
-    return this.aabb.pointInside(v);
+    return this.bounds.pointInside(v);
   }
 
-  public updateAABB(): void {
-    this.aabb.width = this._width;
-    this.aabb.height = this._height;
+  public updateBounds(): void {
+    this.bounds.width = this._width;
+    this.bounds.height = this._height;
   }
 }

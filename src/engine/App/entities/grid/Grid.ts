@@ -90,4 +90,9 @@ export class Grid extends Entity {
     v.y = Math.floor(v.y / CELL_SIZE);
     return { x: v.x, y: v.y };
   }
+
+  transformPointCollition(v: V2): void {
+    v.x = Math.floor(v.x / CELL_SIZE) * CELL_SIZE + CELL_SIZE / 2;
+    v.y = Math.floor(v.y / CELL_SIZE) * CELL_SIZE + CELL_SIZE / 2;
+  }
 }

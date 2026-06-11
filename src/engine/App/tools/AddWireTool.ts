@@ -8,7 +8,6 @@ import {
 import { Wire } from "../entities/wire/Wire";
 import { Connector } from "../entities/connector/Connector";
 import { Grid } from "../entities/grid/Grid";
-import { CELL_SIZE } from "../constants";
 
 export class AddWireTool extends Tool {
   name: string = "add-wire";
@@ -43,9 +42,8 @@ export class AddWireTool extends Tool {
     this.loadEntities();
 
     if (name == "down") {
-      const { entity } = this.context.tree.pointCollition(e);
+      const { entity } = this.context.tree.pointCollition(e, true);
       if (this.currentWire) {
-        this.currentWire.addPoint();
         if (
           entity?.type == "CONNECTOR" &&
           entity.id != this.startConnector.id
@@ -56,6 +54,8 @@ export class AddWireTool extends Tool {
           this.currentWire = undefined;
           this.disable?.(this);
           return;
+        } else {
+          this.currentWire.addPoint();
         }
       } else {
         if (!entity) return;

@@ -6,6 +6,8 @@ export class NodeBaseView extends EntityView<INodeBaseView> {
   protected _layer: number = 1;
   async loadAssets(): Promise<void> {
     const { width: w, height: h } = this.data;
+    this.texture = this.context.assets.get("NODE_BACKGROUND");
+    if (this.texture) return;
 
     this._context.assets.register<ITextureData>(
       "texture",

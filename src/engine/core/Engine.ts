@@ -74,7 +74,7 @@ export class Engine<
 
   protected init() {}
   protected registerAssets() {}
-  protected ready() {}
+  protected async ready() {}
 
   public destroy() {
     this.stopLoop();

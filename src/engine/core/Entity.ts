@@ -28,6 +28,8 @@ export abstract class Entity {
   public childrenVisible: boolean;
   public selectable: boolean;
 
+  public isReady: boolean;
+
   constructor() {
     this.id = uuid();
     this.transform = new Transform();
@@ -38,6 +40,7 @@ export abstract class Entity {
     this.childrenVisible = true;
     this.visible = true;
     this.selectable = true;
+    this.isReady = false;
   }
 
   get layer() {
@@ -61,16 +64,19 @@ export abstract class Entity {
     return this._children;
   }
 
-  async addChild(child: Entity) {
+  addChild(child: Entity) {
     child.parent = this;
     child.context = this.context;
     this._children.push(child);
     this.sortChildsLayers();
-    await child._ready();
+    this.context.tree.initEntity(child);
   }
 
-  async _ready() {
+  async init() {
+    if (this.isReady) return;
+    this.isReady = true;
     await this.view.loadAssets();
+    await Promise.all(this.children.map((child) => child.init()));
     this.ready();
   }
 
@@ -132,18 +138,21 @@ export abstract class Entity {
   }
 
   getAABB() {
-    return this.collider ? this.collider.getAABB() : this.bounds;
+    return this.collider ? this.collider.getBounds() : this.bounds;
   }
 
-  pointCollition(v: V2): undefined | Entity {
+  transformPointCollition(v: V2) {}
+
+  pointCollition(v: V2, applyTransform: boolean = false): undefined | Entity {
     this.transform.mulVInv(v);
+    if (applyTransform) this.transformPointCollition(v);
     for (let i = this._children.length - 1; i >= 0; i--) {
       let entity: Entity | undefined = this._children[i];
       if (!entity.selectable) continue;
       if (!entity.bounds.pointInside(v)) continue;
 
       const insideEntity = entity.collider && entity.collider.pointInside(v);
-      const child = entity.pointCollition(v);
+      const child = entity.pointCollition(v, applyTransform);
       if (!insideEntity && entity.collider) {
         entity = undefined;
       }
@@ -185,7 +194,6 @@ export abstract class Entity {
       path.push(parent.transform);
       parent = parent.parent;
     }
-    debugger;
     path = path.slice(0, path.length - depth);
     for (const transform of path) {
       transform.mulV(v);

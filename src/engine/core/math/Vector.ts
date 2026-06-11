@@ -176,9 +176,15 @@ export class V2 {
     return [this._x, this._y];
   }
 
-  snapToGrid(cellSize: number) {
+  snapToGridRound(cellSize: number) {
     this.x = Math.round(this.x / cellSize) * cellSize;
     this.y = Math.round(this.y / cellSize) * cellSize;
+    return this;
+  }
+
+  snapToGridFloor(cellSize: number) {
+    this.x = Math.floor(this.x / cellSize) * cellSize;
+    this.y = Math.floor(this.y / cellSize) * cellSize;
     return this;
   }
 

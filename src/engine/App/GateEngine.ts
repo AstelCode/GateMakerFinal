@@ -28,7 +28,7 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     this.assets.register<IFontData>("font", "default", FONTS_DATA);
   }
 
-  protected ready(): void {
+  protected async ready(): Promise<void> {
     const grid = new Grid();
     this.tree.addEntity(grid);
     grid.addChild(new NodeBase(10, 3));
@@ -41,6 +41,9 @@ export class GateEngine extends Engine<GateEngineEvents, GateEngineContext> {
     grid.addChild(node1);
     grid.addChild(node);
     grid.addChild(new Selection());
+
+    await this.tree.initEntities();
+
     this.initEvents();
   }
 

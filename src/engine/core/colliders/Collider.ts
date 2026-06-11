@@ -3,23 +3,27 @@ import { V2 } from "../math/Vector";
 
 export abstract class Collider {
   protected static aux_v: V2 = new V2();
-  protected aabb: AABB = new AABB();
+  protected bounds: AABB = new AABB();
 
   constructor(public position: V2 = new V2()) {
-    this.aabb.position = position;
+    this.bounds.position = position;
   }
 
   setPosition(position: V2) {
-    this.aabb.position = position;
+    this.bounds.position = position;
     this.position = position;
   }
 
-  public getAABB() {
-    return this.aabb;
+  public getBounds() {
+    return this.bounds;
   }
-  public updateAABB() {}
+
+  public setBounds(bounds: AABB) {
+    this.bounds = bounds;
+  }
+  public updateBounds() {}
 
   public pointInside(v: V2): boolean {
-    return this.aabb.pointInside(v);
+    return this.bounds.pointInside(v);
   }
 }
