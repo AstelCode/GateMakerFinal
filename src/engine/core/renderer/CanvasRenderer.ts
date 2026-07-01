@@ -107,7 +107,7 @@ export class CanvasRenderer implements IRenderer {
     x: number,
     y: number,
     font?: Font,
-    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`,
+    direction?: `${"top" | "bottom" | "middle"}:${"end" | "center" | "start"}`
   ): void {
     this.ctx.save();
     if (font) this.ctx.font = `${font.size}px ${font.name}`;
@@ -127,7 +127,7 @@ export class CanvasRenderer implements IRenderer {
     y: number,
     width: number,
     height: number,
-    radius?: number,
+    radius?: number
   ) {
     if (radius) {
       this.ctx.beginPath();
@@ -191,7 +191,7 @@ export class CanvasRenderer implements IRenderer {
     name: string,
     texture: HTMLImageElement,
     repetition: string,
-    props?: { transform?: Transform },
+    props?: { transform?: Transform }
   ): void {
     if (!texture || !texture.complete) return;
     if (this._patterns.has(name)) {
@@ -225,41 +225,13 @@ export class CanvasRenderer implements IRenderer {
     if (path.length <= 1) return;
 
     this.ctx.beginPath();
-    this.ctx.moveTo(path[0].x, path[0].y);
     this.ctx.lineWidth = width;
-
-    // Opcional pero recomendado para líneas gruesas:
-    // suaviza las uniones y los extremos
     this.ctx.lineJoin = "round";
     this.ctx.lineCap = "round";
-
-    if (path.length === 2) {
-      this.ctx.lineTo(path[1].x, path[1].y);
-      this.ctx.stroke();
-      return;
+    this.ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      this.ctx.lineTo(path[i].x, path[i].y);
     }
-
-    for (let i = 1; i < path.length - 1; i++) {
-      const a = path[i - 1];
-      const b = path[i];
-      const c = path[i + 1];
-
-      const distAB = Math.hypot(b.x - a.x, b.y - a.y);
-      const distBC = Math.hypot(c.x - b.x, c.y - b.y);
-
-      if (distAB === 0 || distBC === 0) {
-        this.ctx.lineTo(b.x, b.y);
-        continue;
-      }
-
-      const radioMinimoParaCurvaInterna = width / 2 + 2;
-      const radioIdeal = Math.max(radius, radioMinimoParaCurvaInterna);
-      const effectiveRadius = Math.min(radioIdeal, distAB / 2, distBC / 2);
-      this.ctx.arcTo(b.x, b.y, c.x, c.y, effectiveRadius);
-    }
-
-    // Cerrar el trazado con el último punto
-    this.ctx.lineTo(path[path.length - 1].x, path[path.length - 1].y);
     this.ctx.stroke();
   }
 

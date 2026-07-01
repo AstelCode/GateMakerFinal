@@ -62,7 +62,8 @@ export class AddWireTool extends Tool {
         this.currentWire = new Wire();
         const v = entity.transform.position.clone();
         entity.mulGlobalTrasform(v, 1);
-        this.currentWire.setStart(v);
+
+        this.currentWire.setStart(v, (entity as Connector).dir);
         this.grid.addChild(this.currentWire);
       }
     }

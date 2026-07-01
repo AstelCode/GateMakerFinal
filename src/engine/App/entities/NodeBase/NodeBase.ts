@@ -73,13 +73,25 @@ export class NodeBase extends Entity implements INodeBaseView {
         con.direction == Direction.BOTTOM ? this.height / 2 : -this.height / 2;
       const off = CELL_SIZE * (con.idx + 1);
 
+      let dir;
+      switch (con.direction) {
+        case Direction.RIGHT:
+          dir = new V2(1, 0);
+        case Direction.LEFT:
+          dir = new V2(-1, 0);
+        case Direction.TOP:
+          dir = new V2(0, 1);
+        case Direction.BOTTOM:
+          dir = new V2(0, -1);
+      }
+
       if (con.direction == Direction.BOTTOM || con.direction == Direction.TOP) {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x + off, y)),
+          new Connector(con.name, con.direction, new V2(x + off, y), dir)
         );
       } else {
         this.addChild(
-          new Connector(con.name, con.direction, new V2(x, y + off)),
+          new Connector(con.name, con.direction, new V2(x, y + off), dir)
         );
       }
     }

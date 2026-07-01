@@ -16,6 +16,7 @@ export class Connector extends Entity implements IConnectorView {
     public name: string,
     public direction: Direction,
     position: V2,
+    public dir: V2
   ) {
     super();
     this.collider = new RectangleCollider();
